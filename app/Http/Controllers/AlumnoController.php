@@ -404,35 +404,89 @@ class AlumnoController extends Controller
 							->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
 							->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
 							->where('cursos.cur_codigo', '=', $id)
-							->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'))
+							->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
 							->first();
 		$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
-							->select('personas.per_rut', 'alumnos.alu_numero', 'personas.per_dv', 'personas.per_nombre', 'personas.per_nombre_segundo', 'personas.per_apellido_paterno', 'personas.per_apellido_materno')
+							->select('personas.per_rut', 'alumnos.alu_numero', 'personas.per_dv', 'personas.per_nombre', 'personas.per_nombre_segundo', 'personas.per_apellido_paterno', 'personas.per_apellido_materno', 'personas.per_email')
 							->where('alumnos.cur_codigo', '=', $id)
 							->orderBy('alu_numero', 'ASC')
 							->get();
-		$nombre = $curso->name;
-		Excel::create('Curso', function($excel) use($alumnos) {
-			$excel->sheet('Curso', function($sheet) use($alumnos){
-				foreach ($alumnos as $key => $alumno) {
-					$rut = util::format_rut($alumno->per_rut, $alumno->per_dv);
-					$data[] = array('Numero'			=> $alumno->alu_numero,
-									'Rut' 				=> $rut['numero'].'-'.$rut['dv'], 
-									'Primer Nombre' 	=> $alumno->per_nombre,
-									'Segundo Nombre' 	=> $alumno->per_nombre_segundo,
-									'Apellido Paterno' 	=> $alumno->per_apellido_paterno, 
-									'Apellido Materno'	=> $alumno->per_apellido_materno,
-									'E-Mail'			=> $alumno->per_email
+		//$nombre = $curso->name;
+		if ($alumnos->count()> 0){
+			Excel::create($curso->name, function($excel) use($alumnos, $curso) {
+				$excel->sheet($curso->name, function($sheet) use($alumnos, $curso){
+					foreach ($alumnos as $key => $alumno) {
+						$rut = util::format_rut($alumno->per_rut, $alumno->per_dv);
+						$data[] = array('Numero'			=> $alumno->alu_numero,
+										'Rut' 				=> $rut['numero'].'-'.$rut['dv'], 
+										'Primer Nombre' 	=> $alumno->per_nombre,
+										'Segundo Nombre' 	=> $alumno->per_nombre_segundo,
+										'Apellido Paterno' 	=> $alumno->per_apellido_paterno, 
+										'Apellido Materno'	=> $alumno->per_apellido_materno,
+										'E-Mail'			=> $alumno->per_email
+								
+						); 
+					}
+					
+					$sheet->row(2, array(
+							'','Curso: ', $curso->name
+					));						
+					$sheet->row(3, array(
+							'','Profesor: ', $curso->profesor
+					));
+					$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
+										->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+										->where('alumnos.cur_codigo', '=', $curso->cur_codigo)
+										->select(DB::raw('max(alumnos.alu_numero) maximo'))
+										->first();
+					$numero = $persona->maximo + 1;
+					for ($i = $numero; $i <= 50; $i++) {
+						$sheet->row($i+5, array(
+								$i
+						));
+					}
+					$sheet->fromArray($data, null, 'A5', false, true);
+					$sheet->setBorder('B2:D3', 'thin');
+					$sheet->mergeCells('C1:D1');
+					$sheet->mergeCells('C2:D2');
+					$sheet->setBorder('A5:G55', 'thin');
+					$sheet->cells('B2:B3', function($cells) {
+						$cells->setBackground('#2fa4e7');
+						$cells->setFontColor('#ffffff');
+					});
+					$sheet->cells('A5:G5', function($cells) {
+						$cells->setBackground('#2fa4e7');
+						$cells->setFontColor('#ffffff');
+					});
+					$sheet->setWidth(array(
+							'A'     =>  9,
+							'B'     =>  15,
+							'C'     =>  25,
+							'D'     =>  25,
+							'E'     =>  25,
+							'F'     =>  25,
+							'G'     =>  45
 							
-					); 
-				}
-				
-				$sheet->fromArray($data);
-				
-	
-			});
-		})->download('xls');
+					));
+				});
+			})->download('xls');
+		}
+		else{
+			Excel::create('Curso', function($excel) use($alumnos) {
+				$excel->sheet('Curso', function($sheet){
+					$data[] = array('Numero'			=> '',
+							'Rut' 				=> '',
+							'Primer Nombre' 	=> '',
+							'Segundo Nombre' 	=> '',
+							'Apellido Paterno' 	=> '',
+							'Apellido Materno'	=> '',
+							'E-Mail'			=> ''
 		
+					);
+					$sheet->fromArray($data);
+				});
+			})->download('xls');
+		}
 	}
 	
 	public function save_alumnos()
@@ -443,10 +497,10 @@ class AlumnoController extends Controller
 			$path = Input::file('import_file')->getRealPath();
 			$data = Excel::load($path, function($reader) {
 			})->noHeading()->toarray();
-			if ($data[0][0] == 'Numero' && $data[0][1] == 'Rut' &&
-				$data[0][2] == 'Primer Nombre' && $data[0][3] == 'Segundo Nombre' &&
-				$data[0][4] == 'Apellido Paterno' && $data[0][5] == 'Apellido Materno' &&
-				$data[0][6] == 'E-Mail')
+			if ($data[4][0] == 'Numero' && $data[4][1] == 'Rut' &&
+				$data[4][2] == 'Primer Nombre' && $data[4][3] == 'Segundo Nombre' &&
+				$data[4][4] == 'Apellido Paterno' && $data[4][5] == 'Apellido Materno' &&
+				$data[4][6] == 'E-Mail')
 							
 				
 			{
@@ -471,39 +525,41 @@ class AlumnoController extends Controller
 									->get();
 				if ($persona->count()>0){
 					$asignacion = new asignacion();
-					$asignacion->wherein('per_rut', $persona)->delete();
+					$asignacion->wherein('rol_codigo', 4)->wherein('per_rut', $persona)->delete();
 					$alumno = new alumno();
 					$alumno->wherein('per_rut', $persona)->delete();
 					$persona_old->wherein('per_rut', $persona)->delete();
 				}
 				if(!empty($data) && count($data) > 0){
 					foreach ($data as $key => $value) {
-						if ($key != 0){
-							$rut = util::format_rut($value[1]);
-							$cantidad = Persona::where('per_rut', '=', $rut['numero'])->count();
-							if ($cantidad == 0){
-								$persona_new[] = [	
-										'per_rut' 				=> $rut['numero'],
-										'per_dv' 				=> $rut['dv'],
-										'per_nombre'			=> $value[2],
-										'per_nombre_segundo' 	=> $value[3],
-										'per_apellido_paterno' 	=> $value[4],
-										'per_apellido_materno' 	=> $value[5],
-										'per_email'				=> $value[6]
+						if ($key > 4){
+							if (isset($value[1])){
+								$rut = util::format_rut($value[1]);
+								$cantidad = Persona::where('per_rut', '=', $rut['numero'])->count();
+								if ($cantidad == 0){
+									$persona_new[] = [	
+											'per_rut' 				=> $rut['numero'],
+											'per_dv' 				=> $rut['dv'],
+											'per_nombre'			=> $value[2],
+											'per_nombre_segundo' 	=> $value[3],
+											'per_apellido_paterno' 	=> $value[4],
+											'per_apellido_materno' 	=> $value[5],
+											'per_email'				=> $value[6]
+									];
+								}
+								$rol = new rol;
+								$rol = Rol::where('rol_nombre', '=', 'Alumno')->first();
+								$asignacion_new[] = [	
+										'rol_codigo'			=> $rol->rol_codigo,
+										'per_rut'				=> $rut['numero']
+								];
+									
+								$alumno_new[]	= [		
+										'per_rut'				=> $rut['numero'],
+										'alu_numero'			=> $value[0],
+										'cur_codigo'			=> $input['cur_codigo']
 								];
 							}
-							$rol = new rol;
-							$rol = Rol::where('rol_nombre', '=', 'Alumno')->first();
-							$asignacion_new[] = [	
-									'rol_codigo'			=> $rol->rol_codigo,
-									'per_rut'				=> $rut['numero']
-							];
-								
-							$alumno_new[]	= [		
-									'per_rut'				=> $rut['numero'],
-									'alu_numero'			=> $value->numero,
-									'cur_codigo'			=> $input['cur_codigo']
-							];
 						}
 					}
 					if(!empty($persona_new)){
