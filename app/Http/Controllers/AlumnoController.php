@@ -326,8 +326,8 @@ class AlumnoController extends Controller
 							->join('cursos', 'alumnos.cur_codigo', '=', 'cursos.cur_codigo')
 							->join('niveles', 'niveles.niv_codigo', '=', 'cursos.niv_codigo')
 							->where('roles.rol_nombre', '=', 'Alumno')
-							->select('alumnos.alu_numero', 
-									DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre, " - Profesor Jefe: ", personas.per_nombre, " ", personas.per_apellido_paterno) as name'),
+							->select('cursos.cur_codigo',
+									'alumnos.alu_numero', 
 									'personas.per_rut',
 									'personas.per_dv',
 									'personas.per_nombre',
@@ -336,6 +336,12 @@ class AlumnoController extends Controller
 									'personas.per_apellido_materno',
 									'personas.per_email')
 							->find($id);
+			$curso = Curso::join('niveles', 'niveles.niv_codigo', '=', 'cursos.niv_codigo')
+							->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
+							->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
+							->where('cursos.cur_codigo', '=', $record->cur_codigo)
+							->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre, " - Profesor Jefe: ", personas.per_nombre, " ", personas.per_apellido_paterno) as name'))
+							->first();
 			$rut = util::format_rut($record->per_rut, $record->per_dv);
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'alumnos', 'pk' => 'per_rut', 'clase' => 'container col-md-10 col-md-offset-1', 'label' => 'container col-md-4');
 				
@@ -345,6 +351,7 @@ class AlumnoController extends Controller
 			->with('rut', $rut['numero'].'-'.$rut['dv'])
 			->with('entidad', $entidad)
 			->with('tablas', $tabla)
+			->with('curso', $curso)
 			->with('title', 'Ingresar Profesores');
 		}
 	}
@@ -525,7 +532,7 @@ class AlumnoController extends Controller
 									->get();
 				if ($persona->count()>0){
 					$asignacion = new asignacion();
-					$asignacion->wherein('rol_codigo', 4)->wherein('per_rut', $persona)->delete();
+					$asignacion->where('rol_codigo', '=', 4)->wherein('per_rut', $persona)->delete();
 					$alumno = new alumno();
 					$alumno->wherein('per_rut', $persona)->delete();
 					$persona_old->wherein('per_rut', $persona)->delete();
@@ -533,8 +540,8 @@ class AlumnoController extends Controller
 				if(!empty($data) && count($data) > 0){
 					foreach ($data as $key => $value) {
 						if ($key > 4){
+							$rut = util::format_rut($value[1]);
 							if (isset($value[1])){
-								$rut = util::format_rut($value[1]);
 								$cantidad = Persona::where('per_rut', '=', $rut['numero'])->count();
 								if ($cantidad == 0){
 									$persona_new[] = [	
@@ -546,19 +553,43 @@ class AlumnoController extends Controller
 											'per_apellido_materno' 	=> $value[5],
 											'per_email'				=> $value[6]
 									];
+									$rol = new rol;
+									$rol = Rol::where('rol_nombre', '=', 'Alumno')->first();
+									$asignacion_new[] = [	
+											'rol_codigo'			=> $rol->rol_codigo,
+											'per_rut'				=> $rut['numero']
+									];
+										
+									$alumno_new[]	= [		
+											'per_rut'				=> $rut['numero'],
+											'alu_numero'			=> $value[0],
+											'cur_codigo'			=> $input['cur_codigo']
+									];
 								}
-								$rol = new rol;
-								$rol = Rol::where('rol_nombre', '=', 'Alumno')->first();
-								$asignacion_new[] = [	
-										'rol_codigo'			=> $rol->rol_codigo,
-										'per_rut'				=> $rut['numero']
-								];
-									
-								$alumno_new[]	= [		
-										'per_rut'				=> $rut['numero'],
-										'alu_numero'			=> $value[0],
-										'cur_codigo'			=> $input['cur_codigo']
-								];
+								else {
+									if (isset($value[1])){
+										if (!isset($errores)){
+											$errores = 'Los siguientes Rut no fueron ingresados:\n';
+										}
+										else{
+											$errores = $errores . '\n';
+										}
+										$revisar = new persona();
+										$revisar = Persona::leftjoin('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
+															->leftjoin('profesores', 'profesores.per_rut', '=', 'personas.per_rut')
+															->leftjoin('apoderados', 'apoderados.per_rut', '=', 'personas.per_rut')
+															->where('personas.per_rut', '=', $rut['numero'])
+															->select(DB::raw('alumnos.per_rut as alumno, profesores.per_rut as profesor, apoderados.per_rut as apoderado'))
+															->get();
+										$existe = $revisar->toArray();
+										if (isset($revisar[0]['profesor'])){
+											$errores = $errores.'rut: '.$value[1].' fue ingresado como profesor'; 
+										}
+										if (isset($revisar[0]['apoderado'])){
+											$errores = $errores.'rut: '.$value[1].' fue ingresado como apoderado'; 
+										}
+									}
+								}
 							}
 						}
 					}
@@ -577,8 +608,7 @@ class AlumnoController extends Controller
 						$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
 										->select('personas.per_rut')
 										->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-										->orderBy('per_rut', 'ASC')
-										->orderBy('per_apellido_paterno', 'ASC')
+										->orderBy(DB::raw('CONVERT(alumnos.per_rut,UNSIGNED INTEGER)'), 'ASC')
 										->get();
 						foreach ($alumnos as $key => $alumno) {
 							$alumno_new = new alumno();
@@ -632,11 +662,11 @@ class AlumnoController extends Controller
 	public function getAlumno(Request $request, $per_rut){
 		$rut = util::format_rut($per_rut);
 		$persona = new persona();
-		$records = Persona::join('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
-							->join('cursos', 'alumnos.cur_codigo', '=', 'cursos.cur_codigo')
-							->join('niveles', 'niveles.niv_codigo', '=', 'cursos.niv_codigo')
+		$records = Persona::leftjoin('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
+							->leftjoin('profesores', 'profesores.per_rut', '=', 'personas.per_rut')
+							->leftjoin('apoderados', 'apoderados.per_rut', '=', 'personas.per_rut')
 							->where('personas.per_rut', '=', $rut['numero'])
-							->select(DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre) as curso'))
+							->select(DB::raw('alumnos.per_rut as alumno, profesores.per_rut as profesor, apoderados.per_rut as apoderado'))
 							->get();
 		if ($request->ajax()){
 			return response()->json($records);

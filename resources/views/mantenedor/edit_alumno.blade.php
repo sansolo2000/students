@@ -119,7 +119,7 @@ else {
 						<div class="col-sm-3">
 				  		</div>
 						<div class="col-sm-6">
-							<input class="form-control" id="cur_nombre" name="cur_nombre" value="{{ $record['name'] }}" type="text" disabled="disabled">
+							<input class="form-control" id="cur_nombre" name="cur_nombre" value="{{ $curso['name'] }}" type="text" disabled="disabled">
 				  		</div>
 						<div class="col-sm-3">
 				  		</div>
@@ -127,81 +127,83 @@ else {
 					<div class="col-sm-12">
 						&nbsp;
 			  		</div>
-					<fieldset>
-						<?php 
-							$controller = $entidad['controller'].'.update';
-						?>
-						{{ Form::model($record, array('route' => array($controller, $record[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
-						<div class="panel panel-primary" >
-							<div class="panel-heading">
-					    		<h3 class="panel-title">{{ $title}}</h3>
-					  		</div>
-					  		<div class="panel-body">
-								<div class="form-group col-sm-12">
-									<div class="col-sm-1">
-										<label for="curso" class="control-label">Numero:</label>
+					<div class="col-sm-12">
+						<fieldset>
+							<?php 
+								$controller = $entidad['controller'].'.update';
+							?>
+							{{ Form::model($record, array('route' => array($controller, $record[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
+							<div class="panel panel-primary" >
+								<div class="panel-heading">
+						    		<h3 class="panel-title">{{ $title}}</h3>
+						  		</div>
+						  		<div class="panel-body">
+									<div class="form-group col-sm-12">
+										<div class="col-sm-1">
+											<label for="curso" class="control-label">Numero:</label>
+										</div>
+										<div class="col-sm-2">
+											<input class="form-control" id="alu_numero" name="alu_numero" type="text" value="{{ $record['alu_numero'] }}" disabled="disabled">
+											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso['cur_codigo'] }}" type="hidden">
+										</div>
+										<div class="col-sm-1">
+											<label for="curso" class="control-label">Rut:</label>
+										</div>
+										<div class="col-sm-3">
+											<input class="form-control" id="per_rut_alu" name="per_rut_alu" type="text" value="{{ $rut }}" disabled="disabled">
+										</div>
+										<div class="col-sm-5">
+										</div>
 									</div>
-									<div class="col-sm-2">
-										<input class="form-control" id="alu_numero" name="alu_numero" type="text" value="{{ $record['alu_numero'] }}" disabled="disabled">
-										<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $record['cur_codigo'] }}" type="hidden">
-									</div>
-									<div class="col-sm-1">
-										<label for="curso" class="control-label">Rut:</label>
-									</div>
-									<div class="col-sm-3">
-										<input class="form-control" id="per_rut_alu" name="per_rut_alu" type="text" value="{{ $rut }}" disabled="disabled">
-									</div>
-									<div class="col-sm-5">
-									</div>
-								</div>
-								<div class="form-group col-sm-12">
-									<div class="col-sm-1">
-										<label for="curso" class="control-label">Nombre:</label>
-									</div>
-									<div class="col-sm-3">
-										<input class="form-control" id="per_nombre" name="per_nombre" value="{{ $record['per_nombre'] }}" type="text">
-									</div>
-									<div class="col-sm-2">
-										<input class="form-control" id="per_nombre_segundo" name="per_nombre_segundo" value="{{ $record['per_nombre_segundo'] }}" type="text">
-									</div>
-									<div class="col-sm-3">
-										<input class="form-control" id="per_apellido_paterno" name="per_apellido_paterno" value="{{ $record['per_apellido_paterno'] }}" type="text">
-									</div>
-									<div class="col-sm-3">
-										<input class="form-control" id="per_apellido_materno" name="per_apellido_materno" value="{{ $record['per_apellido_materno'] }}" type="text">
-									</div>
-								</div>
-							</div>
-							<div class="panel-footer">
-								<label for="curso" class="control-label">Datos Adicionales:</label>
-								<input type="checkbox" id="dat_adicionales" name="dat_adicionales" >
-							</div>
-					  		<div class="panel-body">
-								<div class="form-group col-sm-12">
-									<div class="col-sm-1">
-										<label for="curso" class="control-label">E-Mail:</label>
-									</div>
-									<div class="col-sm-8">
-										<input class="form-control" id="per_email" name="per_email" type="text" placeholder="E-Mail" disabled="disabled">
-									</div>
-									<div class="col-sm-3">
+									<div class="form-group col-sm-12">
+										<div class="col-sm-1">
+											<label for="curso" class="control-label">Nombre:</label>
+										</div>
+										<div class="col-sm-3">
+											<input class="form-control" id="per_nombre" name="per_nombre" value="{{ $record['per_nombre'] }}" type="text">
+										</div>
+										<div class="col-sm-2">
+											<input class="form-control" id="per_nombre_segundo" name="per_nombre_segundo" value="{{ $record['per_nombre_segundo'] }}" type="text">
+										</div>
+										<div class="col-sm-3">
+											<input class="form-control" id="per_apellido_paterno" name="per_apellido_paterno" value="{{ $record['per_apellido_paterno'] }}" type="text">
+										</div>
+										<div class="col-sm-3">
+											<input class="form-control" id="per_apellido_materno" name="per_apellido_materno" value="{{ $record['per_apellido_materno'] }}" type="text">
+										</div>
 									</div>
 								</div>
-							</div>
-					  		<div class="panel-body">
-								<div class="col-sm-6 col-sm-offset-3" style="text-align: center;">
-									<?php 
-										$controller = $entidad['controller'];
-									?>
-									<a href="../<?php echo $controller ?>" class="btn btn-default">
-											<span>Volver</span>
-									</a>
-								    {{ Form::button('Guardar', array('class'=>'btn btn-default', 'type'=>'submit')) }}    
-									
+								<div class="panel-footer">
+									<label for="curso" class="control-label">Datos Adicionales:</label>
+									<input type="checkbox" id="dat_adicionales" name="dat_adicionales" >
 								</div>
-							</div>
-						{!! Form::close() !!}
-					</fieldset>
+						  		<div class="panel-body">
+									<div class="form-group col-sm-12">
+										<div class="col-sm-2">
+											<label for="curso" class="control-label">E-Mail:</label>
+										</div>
+										<div class="col-sm-8">
+											<input class="form-control" id="per_email" name="per_email" type="text" placeholder="E-Mail" disabled="disabled">
+										</div>
+										<div class="col-sm-2">
+										</div>
+									</div>
+								</div>
+						  		<div class="panel-body">
+									<div class="col-sm-6 col-sm-offset-3" style="text-align: center;">
+										<?php 
+											$controller = $entidad['controller'];
+										?>
+										<a href="../<?php echo $controller ?>" class="btn btn-default">
+												<span>Volver</span>
+										</a>
+									    {{ Form::button('Guardar', array('class'=>'btn btn-default', 'type'=>'submit')) }}    
+										
+									</div>
+								</div>
+							{!! Form::close() !!}
+						</fieldset>
+			  		</div>
 		  		</div>
 			</div>
 </div>
