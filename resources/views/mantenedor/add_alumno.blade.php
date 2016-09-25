@@ -179,6 +179,7 @@ else {
 										</div>
 										<div class="col-sm-2">
 											<input class="form-control" id="alu_numero" name="alu_numero" type="text" value="{{ $numero }}"<?php echo $enable_numero; ?>>
+											<input class="form-control" id="hid_numero" name="hid_numero" value="{{ $numero }}" type="hidden">
 											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
 										</div>
 										<div class="col-sm-1">

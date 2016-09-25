@@ -282,6 +282,7 @@ class AlumnoController extends Controller
 			$persona->per_rut = $rut['numero'];
 			$persona->per_dv = $rut['dv'];
 			$persona->per_nombre = $input['per_nombre'];
+			$persona->per_nombre_segundo = $input['per_nombre_segundo'];
 			$persona->per_apellido_paterno = $input['per_apellido_paterno'];
 			$persona->per_apellido_materno = $input['per_apellido_materno'];
 			if (isset($input['dat_adicionales'])){
@@ -299,7 +300,7 @@ class AlumnoController extends Controller
 		
 		$alumno = new alumno;
 		$alumno->per_rut = $rut['numero'];
-		$alumno->alu_numero = $input['alu_numero'];
+		$alumno->alu_numero = $input['hid_numero'];
 		$alumno->cur_codigo = $input['cur_codigo'];
 		
 		$alumno->save();
@@ -587,6 +588,9 @@ class AlumnoController extends Controller
 										}
 										if (isset($revisar[0]['apoderado'])){
 											$errores = $errores.'rut: '.$value[1].' fue ingresado como apoderado'; 
+										}
+										if (isset($revisar[0]['alumno'])){
+											$errores = $errores.'rut: '.$value[1].' fue ingresado en otro curso'; 
 										}
 									}
 								}
