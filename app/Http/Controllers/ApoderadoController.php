@@ -333,7 +333,7 @@ class ApoderadoController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$tabla = ProfesorController::arreglo();
+			$tabla = AlumnoController::arreglo();
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'profesores', 'pk' => 'per_rut', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
 			$record = Persona::select('personas.per_rut', 'personas.per_dv', 'personas.per_nombre', 'personas.per_apellido_paterno', 'personas.per_apellido_materno', 'personas.per_email', DB::raw('"1" as mod_password'), 'profesores.pro_activo')
 			->join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
@@ -376,8 +376,8 @@ class ApoderadoController extends Controller
 									'pe.per_apellido_paterno AS apo_apellido_paterno', 'pe.per_apellido_materno AS apo_apellido_materno',
 									'pe.per_email AS apo_email')
 						->get();
-		Excel::create('Curso', function($excel) use($personas, $curso) {
-			$excel->sheet('Curso', function($sheet) use($personas, $curso){
+		Excel::create($curso->name, function($excel) use($personas, $curso) {
+			$excel->sheet($curso->name, function($sheet) use($personas, $curso){
 				foreach ($personas as $key => $persona) {
 					$rut_alu = util::format_rut($persona->alu_rut, $persona->alu_dv);
 					$rut_apo = '';
@@ -394,15 +394,24 @@ class ApoderadoController extends Controller
 							'Nombre Apoderado' 				=> $persona->apo_nombre,
 							'Apellido Paterno Apoderado' 	=> $persona->apo_apellido_paterno,
 							'Apellido Materno Apoderado' 	=> $persona->apo_apellido_materno,
-							'E-Mail'						=> $persona->apo_email
+							'E-Mail Apoderado'				=> $persona->apo_email
 					);
 				}
+				//descripción de curso 
 				$sheet->row(2, array(
 						'','Curso: ', $curso->name
 				));						
 				$sheet->row(3, array(
 						'','Profesor: ', $curso->profesor
 				));
+				$sheet->mergeCells('C1:D1');
+				$sheet->mergeCells('C2:D2');
+				$sheet->cells('B2:B3', function($cells) {
+					$cells->setBackground('#2fa4e7');
+					$cells->setFontColor('#ffffff');
+				});
+				
+				
 				$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
 									->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
 									->where('alumnos.cur_codigo', '=', $curso->cur_codigo)
@@ -414,16 +423,20 @@ class ApoderadoController extends Controller
 							$i
 					));
 				}
-				$sheet->fromArray($data, null, 'A5', false, true);
+				
+				//Titulo
+				$sheet->row(5, array(
+						'Alumno','', '', '', 'Apoderado' 
+				));
+				
+				$sheet->mergeCells('A5:D5');
+				$sheet->mergeCells('E5:I5');
+
+				
+				$sheet->fromArray($data, null, 'A6', false, true);
 				$sheet->setBorder('B2:D3', 'thin');
-				$sheet->mergeCells('C1:D1');
-				$sheet->mergeCells('C2:D2');
 				$sheet->setBorder('A5:I55', 'thin');
-				$sheet->cells('B2:B3', function($cells) {
-					$cells->setBackground('#2fa4e7');
-					$cells->setFontColor('#ffffff');
-				});
-				$sheet->cells('A5:I5', function($cells) {
+				$sheet->cells('A5:I6', function($cells) {
 					$cells->setBackground('#2fa4e7');
 					$cells->setFontColor('#ffffff');
 				});
@@ -477,7 +490,7 @@ class ApoderadoController extends Controller
 		if(Input::hasFile('import_file')){
 			$path = Input::file('import_file')->getRealPath();
 			$data = Excel::load($path, function($reader) {
-								})->get();
+			})->noHeading()->toarray();
 			if (($data[0]->getTitle() == 'numero') && ($data[1]->getTitle() == 'rut alumno') &&
 					($data[2]->getTitle() == 'nombre alumno') && ($data[3]->getTitle() == 'apellido alumno') &&
 					($data[4]->getTitle() == 'rut apoderado') && ($data[5]->getTitle() == 'nombre apoderado') &&
