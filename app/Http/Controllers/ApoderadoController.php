@@ -376,7 +376,7 @@ class ApoderadoController extends Controller
 									'pe.per_apellido_paterno AS apo_apellido_paterno', 'pe.per_apellido_materno AS apo_apellido_materno',
 									'pe.per_email AS apo_email')
 						->get();
-		Excel::create($curso->name, function($excel) use($personas, $curso) {
+		Excel::create($curso->name.' - Apoderado', function($excel) use($personas, $curso) {
 			$excel->sheet($curso->name, function($sheet) use($personas, $curso){
 				foreach ($personas as $key => $persona) {
 					$rut_alu = util::format_rut($persona->alu_rut, $persona->alu_dv);
@@ -491,11 +491,11 @@ class ApoderadoController extends Controller
 			$path = Input::file('import_file')->getRealPath();
 			$data = Excel::load($path, function($reader) {
 			})->noHeading()->toarray();
-			if (($data[0]->getTitle() == 'numero') && ($data[1]->getTitle() == 'rut alumno') &&
-					($data[2]->getTitle() == 'nombre alumno') && ($data[3]->getTitle() == 'apellido alumno') &&
-					($data[4]->getTitle() == 'rut apoderado') && ($data[5]->getTitle() == 'nombre apoderado') &&
-					($data[6]->getTitle() == 'nombre paterno apoderado') && 
-					($data[7]->getTitle() == 'nombre materno apoderado') && ($data[8]->getTitle() == 'e-mail'))
+			if ($data[5][0] == 'Numero' && $data[4][1] == 'Rut Alumno' &&
+					$data[5][2] == 'Nombre Alumno' && $data[5][3] == 'Apellido Alumno' &&
+					$data[5][4] == 'Rut Apoderado' && $data[5][5] == 'Nombre Apoderado' &&
+					$data[5][6] == 'Apellido Paterno Apoderado' && $data[5][7] == 'Apellido Materno Apoderado' &&
+					$data[5][8] == 'E-Mail Apoderado')
 			{
 	
 				$persona = new persona();
@@ -504,7 +504,7 @@ class ApoderadoController extends Controller
 									->join('apoderados_alumos', 'apoderados.apo_codigo', '=', 'apoderados_alumos.apo_codigo')
 									->join('alumnos', 'apoderados_alumos.alu_codigo', '=', 'alumnos.alu_codigo')
 									->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-									->select('personas.per_rut')
+									->select('personas.per_ru')
 									->get();
 				if ($persona->count()>0){
 					$asignacion = new asignacion();

@@ -421,7 +421,7 @@ class AlumnoController extends Controller
 							->get();
 		//$nombre = $curso->name;
 		if ($alumnos->count()> 0){
-			Excel::create($curso->name, function($excel) use($alumnos, $curso) {
+			Excel::create($curso->name.' - Alumno', function($excel) use($alumnos, $curso) {
 				$excel->sheet($curso->name, function($sheet) use($alumnos, $curso){
 					foreach ($alumnos as $key => $alumno) {
 						$rut = util::format_rut($alumno->per_rut, $alumno->per_dv);
@@ -512,31 +512,19 @@ class AlumnoController extends Controller
 							
 				
 			{
-				if (isset($input['dat_overwrite'])){
-					$numero = 1;
-				}
-				else{
-					$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
-										->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
-										->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-										->select('max(alumnos.alu_numero) maximo')
-										->first();
-					$numero = $persona->maximo;
-				}
+				
 						
 				$persona = new persona();
 				$persona_old = new persona();
-				$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
-									->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
-									->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-									->select('personas.per_rut')
-									->get();
-				if ($persona->count()>0){
-					$asignacion = new asignacion();
-					$asignacion->where('rol_codigo', '=', 4)->wherein('per_rut', $persona)->delete();
-					$alumno = new alumno();
-					$alumno->wherein('per_rut', $persona)->delete();
-					$persona_old->wherein('per_rut', $persona)->delete();
+				$persona_upd = new persona();
+				if ($input['groupSave'] == 'save'){
+					if ($persona->count()>0){
+						$asignacion = new asignacion();
+						$asignacion->where('rol_codigo', '=', 4)->wherein('per_rut', $persona)->delete();
+						$alumno = new alumno();
+						$alumno->wherein('per_rut', $persona)->delete();
+						$persona_old->wherein('per_rut', $persona)->delete();
+					}
 				}
 				if(!empty($data) && count($data) > 0){
 					foreach ($data as $key => $value) {
@@ -566,47 +554,65 @@ class AlumnoController extends Controller
 											'alu_numero'			=> $value[0],
 											'cur_codigo'			=> $input['cur_codigo']
 									];
+									if(!empty($persona_new)){
+										$persona = Persona::insert($persona_new);
+									}
+									if(!empty($asignacion_new)){
+										$asignacion = Asignacion::insert($asignacion_new);
+									}
+									if(!empty($alumno_new)){
+										$alumno = Alumno::insert($alumno_new);
+									}
 								}
 								else {
 									if (isset($value[1])){
-										if (!isset($errores)){
-											$errores = 'Los siguientes Rut no fueron ingresados:\n';
+										$persona_upd = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
+											->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+											->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
+											->where('personas.per_rut', '=', $rut['numero'])
+											->select('personas.per_rut')
+											->get();
+										if ($persona_upd->count()==1){
+											$persona_upd = Persona::where('personas.per_rut', '=', $rut['numero'])->first();
+											$persona_upd->per_nombre			= $value[2];
+											$persona_upd->per_nombre_segundo 	= $value[3];
+											$persona_upd->per_apellido_paterno 	= $value[4];
+											$persona_upd->per_apellido_materno 	= $value[5];
+											$persona_upd->per_email				= $value[6];
+											$persona_upd->save();											
 										}
-										else{
-											$errores = $errores . '\n';
-										}
-										$revisar = new persona();
-										$revisar = Persona::leftjoin('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
-															->leftjoin('profesores', 'profesores.per_rut', '=', 'personas.per_rut')
-															->leftjoin('apoderados', 'apoderados.per_rut', '=', 'personas.per_rut')
-															->where('personas.per_rut', '=', $rut['numero'])
-															->select(DB::raw('alumnos.per_rut as alumno, profesores.per_rut as profesor, apoderados.per_rut as apoderado'))
-															->get();
-										$existe = $revisar->toArray();
-										if (isset($revisar[0]['profesor'])){
-											$errores = $errores.'rut: '.$value[1].' fue ingresado como profesor'; 
-										}
-										if (isset($revisar[0]['apoderado'])){
-											$errores = $errores.'rut: '.$value[1].' fue ingresado como apoderado'; 
-										}
-										if (isset($revisar[0]['alumno'])){
-											$errores = $errores.'rut: '.$value[1].' fue ingresado en otro curso'; 
+										else {
+											if (!isset($errores)){
+												$errores = 'Los siguientes Rut no fueron ingresados:\n';
+											}
+											else{
+												$errores = $errores . '\n';
+											}
+											$revisar = new persona();
+											$revisar = Persona::leftjoin('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
+																->leftjoin('profesores', 'profesores.per_rut', '=', 'personas.per_rut')
+																->leftjoin('apoderados', 'apoderados.per_rut', '=', 'personas.per_rut')
+																->where('personas.per_rut', '=', $rut['numero'])
+																->select(DB::raw('alumnos.per_rut as alumno, profesores.per_rut as profesor, apoderados.per_rut as apoderado'))
+																->get();
+											$existe = $revisar->toArray();
+											if (isset($revisar[0]['profesor'])){
+												$errores = $errores.'rut: '.$value[1].' fue ingresado como profesor'; 
+											}
+											if (isset($revisar[0]['apoderado'])){
+												$errores = $errores.'rut: '.$value[1].' fue ingresado como apoderado'; 
+											}
+											if (isset($revisar[0]['alumno'])){
+												$errores = $errores.'rut: '.$value[1].' fue ingresado en otro curso'; 
+											}
 										}
 									}
 								}
 							}
 						}
 					}
-					if(!empty($persona_new)){
-						$persona = Persona::insert($persona_new);
-					}
-					if(!empty($asignacion_new)){
-						$asignacion = Asignacion::insert($asignacion_new);
-					}
-					if(!empty($alumno_new)){
-						$alumno = Alumno::insert($alumno_new);
-					}
 					if ($input['groupOrganiza'] == 'orgRut'){
+						$numero = 1;
 						$alumnos = new alumno();
 						$alumno_new = new alumno();
 						$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
@@ -622,6 +628,7 @@ class AlumnoController extends Controller
 							
 					}
 					if ($input['groupOrganiza'] == 'orgAlfabetico'){
+						$numero = 1;
 						$alumnos = new alumno();
 						$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
 											->select('personas.per_rut')

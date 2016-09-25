@@ -33,19 +33,9 @@ else {
 	$().ready(function () {
 		$('#myform').validate({
 			rules: {
-				'groupNumber'			:	{required: true},
+				'groupSave'				:	{required: true},
 				'groupOrganiza'			:	{required: true},
 				'import_file'			:	{required: true, extension: 'xls|xlsx'}
-			}
-		});
-		$('#dat_overwrite').change(function(event){
-			if ($('#dat_overwrite').is(':checked')){
-				$('#renew').attr('disabled', true); 
-				$('#continue').attr('disabled', true);
-			}
-			else {
-				$('#renew').attr('disabled', false); 
-				$('#continue').attr('disabled', false); 
 			}
 		});
 
@@ -78,31 +68,21 @@ else {
 								<div class="panel-heading">
 						    		<h3 class="panel-title">{{ $title}}</h3>
 						  		</div>
-						  		<div class="panel-body">
-									<div class="col-sm-3">
-									</div>
-									<div class="col-sm-6" style="text-align: center;">
-										<label for="curso" class="control-label">Sobre escribir:</label>
-										<input type="checkbox" id="dat_overwrite" name="dat_overwrite" >
-									</div>
-									<div class="col-sm-3">
-									</div>
-								</div>
-								<div class="panel-footer">Numeraci&oacute;n</div>
+								<div class="panel-footer">Modo Guardado</div>
 						  		<div class="panel-body">
 									<div class="col-sm-3">
 									</div>
 									<div class="col-sm-6" style="text-align: left;">
 										<div class="radio">
 											<label>
-												<input type="radio" name="groupNumber" value="renew" id="renew">
-												Reiniciar
+												<input type="radio" name="groupSave" value="save" id="save">
+												Sobreescribir
 											</label>
 		        						</div>
 										<div class="radio">
 											<label>
-												<input type="radio" name="groupNumber" value="continue" id="continue">
-												Continuar Numeraci&oacute;n
+												<input type="radio" name="groupSave" value="modify" id="modify">
+												Modificar
 											</label>
 										</div>
 									</div>
