@@ -228,7 +228,7 @@ class ApoderadoController extends Controller
 	
 				$personas = $personas->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'apoderados', 'pk' => 'apo_rut', 'clase' => 'container col-md-12', 'col' => 9);
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'apoderados', 'pk' => 'apo_rut', 'clase' => 'container col-md-12', 'col' => 8);
 			return view('mantenedor.index_apoderado')
 						->with('menu', $menu)
 						->with('tablas', $tabla)
@@ -328,7 +328,7 @@ class ApoderadoController extends Controller
 		$menu = navegador::crear_menu($idusuario);
 		$privilegios = navegador::privilegios($idusuario, $this->Privilegio_modulo);
 		$privilegio = $privilegios[0];
-		$validate = ProfesorController::validador();
+		$validate = ApoderadoController::validador();
 		if ($privilegio->mas_edit == 0){
 			return redirect()->route('logout');
 		}
@@ -359,7 +359,7 @@ class ApoderadoController extends Controller
 						->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
 						->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
 						->where('cursos.cur_codigo', '=', $id)
-						->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'))
+						->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
 						->first();
 		$personas = DB::table('alumnos as al')
 						->join('personas AS pa', DB::raw('pa.per_rut'), '=', DB::raw('al.per_rut'))
@@ -376,9 +376,8 @@ class ApoderadoController extends Controller
 									'pe.per_apellido_paterno AS apo_apellido_paterno', 'pe.per_apellido_materno AS apo_apellido_materno',
 									'pe.per_email AS apo_email')
 						->get();
-		$nombre = $curso->name;
-		Excel::create('Curso', function($excel) use($personas) {
-			$excel->sheet('Curso', function($sheet) use($personas){
+		Excel::create('Curso', function($excel) use($personas, $curso) {
+			$excel->sheet('Curso', function($sheet) use($personas, $curso){
 				foreach ($personas as $key => $persona) {
 					$rut_alu = util::format_rut($persona->alu_rut, $persona->alu_dv);
 					$rut_apo = '';
@@ -387,18 +386,58 @@ class ApoderadoController extends Controller
 						$rut_apo = $rut_apo['numero'].'-'.$rut_apo['dv'];
 					}
 					$data[] = array(
-							'numero'						=> $persona->alu_numero,
-							'rut_alumno'					=> $rut_alu['numero'].'-'.$rut_alu['dv'],
-							'nombre_alumno' 				=> $persona->alu_nombre,
-							'apellido_alumno' 				=> $persona->alu_apellido_paterno,
-							'rut_apoderado'					=> $rut_apo,
-							'nombre_apoderado' 				=> $persona->apo_nombre,
-							'apellido_paterno_apoderado' 	=> $persona->apo_apellido_paterno,
-							'apellido_materno_apoderado' 	=> $persona->apo_apellido_materno,
-							'e-mail'						=> $persona->apo_email
+							'Numero'						=> $persona->alu_numero,
+							'Rut Alumno'					=> $rut_alu['numero'].'-'.$rut_alu['dv'],
+							'Nombre Alumno' 				=> $persona->alu_nombre,
+							'Apellido Alumno' 				=> $persona->alu_apellido_paterno,
+							'Rut Apoderado'					=> $rut_apo,
+							'Nombre Apoderado' 				=> $persona->apo_nombre,
+							'Apellido Paterno Apoderado' 	=> $persona->apo_apellido_paterno,
+							'Apellido Materno Apoderado' 	=> $persona->apo_apellido_materno,
+							'E-Mail'						=> $persona->apo_email
 					);
 				}
-				$sheet->fromArray($data);
+				$sheet->row(2, array(
+						'','Curso: ', $curso->name
+				));						
+				$sheet->row(3, array(
+						'','Profesor: ', $curso->profesor
+				));
+				$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
+									->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+									->where('alumnos.cur_codigo', '=', $curso->cur_codigo)
+									->select(DB::raw('max(alumnos.alu_numero) maximo'))
+									->first();
+				$numero = $persona->maximo + 1;
+				for ($i = $numero; $i <= 50; $i++) {
+					$sheet->row($i+5, array(
+							$i
+					));
+				}
+				$sheet->fromArray($data, null, 'A5', false, true);
+				$sheet->setBorder('B2:D3', 'thin');
+				$sheet->mergeCells('C1:D1');
+				$sheet->mergeCells('C2:D2');
+				$sheet->setBorder('A5:I55', 'thin');
+				$sheet->cells('B2:B3', function($cells) {
+					$cells->setBackground('#2fa4e7');
+					$cells->setFontColor('#ffffff');
+				});
+				$sheet->cells('A5:I5', function($cells) {
+					$cells->setBackground('#2fa4e7');
+					$cells->setFontColor('#ffffff');
+				});
+				$sheet->setWidth(array(
+						'A'     =>  9,
+						'B'     =>  15,
+						'C'     =>  25,
+						'D'     =>  25,
+						'E'     =>  15,
+						'F'     =>  25,
+						'G'     =>  25,
+						'H'		=> 	25,
+						'I'		=> 	45
+				));
 			});
 		})->download('xls');
 	}
@@ -666,10 +705,10 @@ class ApoderadoController extends Controller
 							'clase' 		=> 'container col-md-8',
 							'validate'		=> '',
 							'descripcion'	=> 'E-Mail',
-							'value'			=> $this->apo_email,
+							'value'			=> '',
 							'tipo'			=> 'input',
 							'select'		=> 0,
-							'filter'		=> 1,
+							'filter'		=> 3,
 							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Modificar Password',
 							'campo'			=> 'mod_password',

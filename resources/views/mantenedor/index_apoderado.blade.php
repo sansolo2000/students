@@ -144,14 +144,13 @@ else {
 									</tr>
 									<tr class="active">
 										<th style="width:5%">Numero</th>
-										<th style="width:10%">Rut</th>
-										<th style="width:12%">Nombre</th>
-										<th style="width:12%">A. Paterno</th>
-										<th style="width:10%">Rut</th>
-										<th style="width:12%">Nombre</th>
-										<th style="width:12%">A. Paterno</th>
-										<th style="width:12%">E-Mail</th>
-										<th style="width:15%">Acciones</th>
+										<th style="width:15%">Rut</th>
+										<th style="width:16%">Nombre</th>
+										<th style="width:16%">A. Paterno</th>
+										<th style="width:15%">Rut</th>
+										<th style="width:16%">Nombre</th>
+										<th style="width:16%">A. Paterno</th>
+										<th style="width:1%">Acciones</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -216,7 +215,6 @@ else {
 														?></th>
 												<td><?php echo $record->apo_nombre;?></th>
 												<td><?php echo $record->apo_apellido_paterno;?></th>
-												<td><?php echo $record->apo_email;?></th>
 												<td>
 													<div class="btn-toolbar" role="toolbar" style="width: 100px;">
 														<div class="btn-group">
@@ -230,7 +228,7 @@ else {
 																}
 															?>
 															<a href="<?php echo $controller ?>" class="btn btn-default <?php echo $clase; ?>">
-																<span class="glyphicon glyphicon-plus-sign"></span>
+																<span class="glyphicon glyphicon-edit"></span>
 															</a>
 															{{ Form::open(array('url' => $entidad['controller'].'/'.$record->alu_rut, 'class' => 'pull-right')) }}
 																<?php $url = $entidad['controller']; $id = $record->alu_rut;  ?>
