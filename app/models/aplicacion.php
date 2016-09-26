@@ -8,6 +8,6 @@ class aplicacion extends Model
 {
 	protected $table = 'aplicaciones';
 	protected $primaryKey = 'apl_codigo';
-	protected $fillable = ['apl_codigo', 'apl_nombre', 'apl_descripcion', 'apl_orden', 'apl_activo'];
+	protected $fillable = ['apl_codigo', 'apl_nombre', 'apl_descripcion', 'apl_orden', 'apl_activo', 'updated_at', 'created_at'];
 	protected $guarded	= ['apl_codigo'];
 }

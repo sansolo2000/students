@@ -8,7 +8,7 @@ class colegio extends Model
 {
 	protected $table = 'colegios';
 	protected $primaryKey = 'col_codigo';
-	protected $fillable = ['col_codigo', 'col_nombre', 'col_direccion', 'com_codigo', 'col_activo'];
+	protected $fillable = ['col_codigo', 'col_nombre', 'col_direccion', 'com_codigo', 'col_activo', 'updated_at', 'created_at'];
 	protected $guarded	= ['col_codigo'];
 	//
 }

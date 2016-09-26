@@ -10,5 +10,4 @@ class region extends Model
 	protected $primaryKey = 'reg_codigo';
 	protected $fillable = ['reg_codigo', 'reg_nombre', 'reg_orden', 'reg_activo'];
 	protected $guarded	= ['reg_codigo'];
-	//
 }

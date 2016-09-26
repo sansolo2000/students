@@ -552,17 +552,9 @@ class AlumnoController extends Controller
 									$alumno_new[]	= [		
 											'per_rut'				=> $rut['numero'],
 											'alu_numero'			=> $value[0],
+											'alu_activo'			=> 1,
 											'cur_codigo'			=> $input['cur_codigo']
 									];
-									if(!empty($persona_new)){
-										$persona = Persona::insert($persona_new);
-									}
-									if(!empty($asignacion_new)){
-										$asignacion = Asignacion::insert($asignacion_new);
-									}
-									if(!empty($alumno_new)){
-										$alumno = Alumno::insert($alumno_new);
-									}
 								}
 								else {
 									if (isset($value[1])){
@@ -610,6 +602,15 @@ class AlumnoController extends Controller
 								}
 							}
 						}
+					}
+					if(!empty($persona_new)){
+						$persona = Persona::insert($persona_new);
+					}
+					if(!empty($asignacion_new)){
+						$asignacion = Asignacion::insert($asignacion_new);
+					}
+					if(!empty($alumno_new)){
+						$alumno = Alumno::insert($alumno_new);
 					}
 					if ($input['groupOrganiza'] == 'orgRut'){
 						$numero = 1;

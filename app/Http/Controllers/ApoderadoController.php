@@ -13,6 +13,7 @@ use App\models\alumno;
 use App\models\curso;
 use App\models\profesor;
 use App\models\apoderado;
+use App\models\apoderado_alumno;
 
 use App\helpers\util;
 use App\helpers\navegador;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Hash;
 use Session;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\models\error;
 
 
 class ApoderadoController extends Controller
@@ -374,7 +376,7 @@ class ApoderadoController extends Controller
 									'pa.per_nombre AS alu_nombre', 'pa.per_apellido_paterno AS alu_apellido_paterno', 
 									'pe.per_rut AS apo_rut', 'pe.per_dv AS apo_dv', 'pe.per_nombre AS apo_nombre', 
 									'pe.per_apellido_paterno AS apo_apellido_paterno', 'pe.per_apellido_materno AS apo_apellido_materno',
-									'pe.per_email AS apo_email')
+									'pe.per_email AS apo_email', 'ap.apo_fono AS apo_fono')
 						->get();
 		Excel::create($curso->name.' - Apoderado', function($excel) use($personas, $curso) {
 			$excel->sheet($curso->name, function($sheet) use($personas, $curso){
@@ -394,7 +396,8 @@ class ApoderadoController extends Controller
 							'Nombre Apoderado' 				=> $persona->apo_nombre,
 							'Apellido Paterno Apoderado' 	=> $persona->apo_apellido_paterno,
 							'Apellido Materno Apoderado' 	=> $persona->apo_apellido_materno,
-							'E-Mail Apoderado'				=> $persona->apo_email
+							'E-Mail Apoderado'				=> $persona->apo_email,
+							'Fono Apoderado'				=> $persona->apo_fono
 					);
 				}
 				//descripción de curso 
@@ -430,13 +433,13 @@ class ApoderadoController extends Controller
 				));
 				
 				$sheet->mergeCells('A5:D5');
-				$sheet->mergeCells('E5:I5');
+				$sheet->mergeCells('E5:J5');
 
 				
 				$sheet->fromArray($data, null, 'A6', false, true);
 				$sheet->setBorder('B2:D3', 'thin');
-				$sheet->setBorder('A5:I55', 'thin');
-				$sheet->cells('A5:I6', function($cells) {
+				$sheet->setBorder('A5:J55', 'thin');
+				$sheet->cells('A5:J6', function($cells) {
 					$cells->setBackground('#2fa4e7');
 					$cells->setFontColor('#ffffff');
 				});
@@ -449,7 +452,8 @@ class ApoderadoController extends Controller
 						'F'     =>  25,
 						'G'     =>  25,
 						'H'		=> 	25,
-						'I'		=> 	45
+						'I'		=> 	45,
+						'J'		=> 	20
 				));
 			});
 		})->download('xls');
@@ -484,113 +488,115 @@ class ApoderadoController extends Controller
 
 
 	public function save_apoderados()
-	
 	{
-		$input = Input::all();
-		if(Input::hasFile('import_file')){
-			$path = Input::file('import_file')->getRealPath();
-			$data = Excel::load($path, function($reader) {
-			})->noHeading()->toarray();
-			if ($data[5][0] == 'Numero' && $data[4][1] == 'Rut Alumno' &&
+/*		try {*/
+			$input = Input::all();
+			if(Input::hasFile('import_file')){
+				$path = Input::file('import_file')->getRealPath();
+				$data = Excel::load($path, function($reader) {
+				})->noHeading()->toarray();
+				if ($data[5][0] == 'Numero' && $data[5][1] == 'Rut Alumno' && 
 					$data[5][2] == 'Nombre Alumno' && $data[5][3] == 'Apellido Alumno' &&
 					$data[5][4] == 'Rut Apoderado' && $data[5][5] == 'Nombre Apoderado' &&
 					$data[5][6] == 'Apellido Paterno Apoderado' && $data[5][7] == 'Apellido Materno Apoderado' &&
-					$data[5][8] == 'E-Mail Apoderado')
-			{
-	
-				$persona = new persona();
-				$persona_old = new persona();
-				$persona = Persona::join('apoderados', 'personas.per_rut', '=', 'apoderados.per_rut')
-									->join('apoderados_alumos', 'apoderados.apo_codigo', '=', 'apoderados_alumos.apo_codigo')
-									->join('alumnos', 'apoderados_alumos.alu_codigo', '=', 'alumnos.alu_codigo')
-									->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-									->select('personas.per_ru')
-									->get();
-				if ($persona->count()>0){
-					$asignacion = new asignacion();
-					$asignacion->wherein('per_rut', $persona)->delete();
-					$alumno = new alumno();
-					$alumno->wherein('per_rut', $persona)->delete();
-					$persona_old->wherein('per_rut', $persona)->delete();
+					$data[5][8] == 'E-Mail Apoderado' && $data[5][9] == 'Fono Apoderado')
+				{
+					if(!empty($data) && count($data) > 0){
+						foreach ($data as $key => $value) {
+							if ($key >= 6){
+								if (isset($value[1]) || isset($value[4])){
+									$rut_alu = util::format_rut($value[1]);
+									//if ()
+									$rut_apo = util::format_rut($value[4]);
+									//Rut Alumno
+									
+									$cantidad = Persona::where('per_rut', '=', $rut_apo['numero'])->count();
+									if ($cantidad == 0){
+										$persona = new persona();
+										$persona->per_rut 				= $rut_apo['numero'];
+										$persona->per_dv 				= $rut_apo['dv'];
+										$persona->per_nombre 			= $value[5];
+										$persona->per_apellido_paterno 	= $value[6];
+										$persona->per_apellido_materno 	= $value[7];
+										$persona->per_email				= $value[8];
+										$persona->save();
+										
+										$rol = new rol;
+										$rol = Rol::where('rol_nombre', '=', 'Apoderado')->first();
+										
+										
+										$asignacion = new asignacion();
+										$asignacion->rol_codigo = $rol->rol_codigo;
+										$asignacion->per_rut = $rut_apo['numero'];
+										$asignacion->save();
+										
+										$apoderado = new apoderado();
+										$apoderado->per_rut  = $rut_apo['numero'];
+										$apoderado->apo_fono = $value[9];
+										$apoderado->save();
+
+										$alumno = Alumno::where('alumnos.per_rut', '=', $rut_alu['numero'])
+														->first();
+										$apoderado_alumno = new apoderado_alumno();
+										$apoderado_alumno->apo_codigo = $apoderado->apo_codigo;
+										$apoderado_alumno->alu_codigo = $alumno->alu_codigo;
+										$apoderado_alumno->save();
+										unset($persona_new);
+										unset($asignacion_new);
+										unset($apoderado_new);
+										unset($apoderado_alumno_new);
+									}
+									else {
+										$persona_upd = new persona();
+										$persona_upd = Persona::where('personas.per_rut', '=', $rut_apo['numero'])->first();
+										$persona_upd->per_nombre			= $value[5];
+										$persona_upd->per_apellido_paterno 	= $value[6];
+										$persona_upd->per_apellido_materno 	= $value[7];
+										$persona_upd->per_email				= $value[8];
+										$persona_upd->save();
+										$apoderado_upd = new apoderado();
+										$apoderado_upd = Apoderado::where('apoderados.per_rut', '=', $rut_apo['numero'])->first();
+										$apoderado_upd->apo_fono				= $value[9];
+										$apoderado_upd->save();
+									}
+								}
+							}
+						}
+					}
 				}
-				if(!empty($data) && $data->count()){
-					foreach ($data as $key => $value) {
-						$rut_alu = util::format_rut($value->rut);
-						//if ()
-						$rut_apo = util::format_rut($value->rut);
-						//Rut Alumno
-						
-						$cantidad = Persona::where('per_rut', '=', $rut['numero'])->count();
-						if ($cantidad == 0){
-							$persona_new[] = [	'per_rut' 				=> $rut['numero'],
-									'per_dv' 				=> $rut['dv'],
-									'per_nombre'			=> $value->nombre,
-									'per_apellido_paterno' 	=> $value->paterno,
-									'per_apellido_materno' 	=> $value->materno,
-									'per_email'				=> $value->email];
-						}
-						$rol = new rol;
-						$rol = Rol::where('rol_nombre', '=', 'Alumno')->first();
-						$asignacion_new[] = [	'rol_codigo'			=> $rol->rol_codigo,
-								'per_rut'				=> $rut['numero']];
-							
-						$alumno_new[]	= [		'per_rut'				=> $rut['numero'],
-								'alu_numero'			=> $value->numero,
-								'cur_codigo'			=> $input['cur_codigo']];
-					}
-					if(!empty($persona_new)){
-						$persona = Persona::insert($persona_new);
-					}
-					if(!empty($asignacion_new)){
-						$asignacion = Asignacion::insert($asignacion_new);
-					}
-					if(!empty($alumno_new)){
-						$alumno = Alumno::insert($alumno_new);
-					}
-					if ($input['groupOrganiza'] == 'orgRut'){
-						$alumnos = new alumno();
-						$alumno_new = new alumno();
-						$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
-						->select('personas.per_rut')
-						->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-						->orderBy('per_rut', 'ASC')
-						->orderBy('per_apellido_paterno', 'ASC')
-						->get();
-						foreach ($alumnos as $key => $alumno) {
-							$alumno_new = new alumno();
-							$alumno_new = $alumno_new::where('alumnos.per_rut', '=', $alumno->per_rut)->update(array('alu_numero' => $numero));
-							$numero = $numero + 1;
-						}
-							
-					}
-					if ($input['groupOrganiza'] == 'orgAlfabetico'){
-						$alumnos = new alumno();
-						$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
-						->select('personas.per_rut')
-						->where('alumnos.cur_codigo', '=', $input['cur_codigo'])
-						->orderBy('per_apellido_paterno', 'ASC')
-						->orderBy('per_apellido_materno', 'ASC')
-						->orderBy('per_nombre', 'ASC')
-						->get();
-						foreach ($alumnos as $key => $alumno) {
-							$alumno_new = new alumno();
-							$alumno_new = $alumno_new::where('alumnos.per_rut', '=', $alumno->per_rut)->update(array('alu_numero' => $numero));
-							$numero = $numero + 1;
-						}
-					}
+				else {
+					$errores = 'La primera columna debe contener: "numero", "rut", "nombre", "paterno", "materno", "email"';
 				}
 			}
 			else {
-				$errores = 'La primera columna debe contener: "numero", "rut", "nombre", "paterno", "materno", "email"';
+				$errores = 'Error con el archivo';
 			}
-		}
-		else {
-			$errores = 'Error con el archivo';
-		}
-		if(empty($errores)){
-			return redirect()->route('apoderados.index');
-		}
-		else {
+			if(empty($errores)){
+				return redirect()->route('apoderados.index');
+			}
+			else {
+				if (Session::has('search.apoderado_curso')){
+					$search = Session::get('search.apoderado_curso');
+					$this->cur_codigo	= $search['cur_codigo'];
+					Session::put('search.apoderado_errores', array(
+							'errores'	=>	$errores));
+		
+				}
+				return redirect()->route('apoderados.index');
+		
+			}
+/*		} catch (\Exception $e) {
+			$errores = 'Se produjo un error en el proceso\nDescargue el archivo y vuelva a ingresar los valores';
+			$error = new error();
+			$error_new[] = [
+					'err_datos' 		=> $e,
+					'err_fecha'			=> DB::raw('NOW()'),
+					'per_rut'			=> $idusuario = Auth::user()->per_rut,
+					'mod_codigo' 		=> $this->Privilegio_modulo,
+					'err_procedure'		=> 'save_apoderados'];
+				
+			$error = error::insert($error_new);
+				
 			if (Session::has('search.apoderado_curso')){
 				$search = Session::get('search.apoderado_curso');
 				$this->cur_codigo	= $search['cur_codigo'];
@@ -599,10 +605,10 @@ class ApoderadoController extends Controller
 	
 			}
 			return redirect()->route('apoderados.index');
-	
 		}
-	
+*/	
 	}
+	
 	
 	
 	
