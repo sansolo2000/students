@@ -364,7 +364,7 @@ class AlumnoController extends Controller
 		$persona = Persona::find($id);
 
 		$persona->per_nombre = $input['per_nombre'];
-		$persona->per_nombre = $input['per_nombre_segundo'];
+		$persona->per_nombre_segundo = $input['per_nombre_segundo'];
 		$persona->per_apellido_paterno = $input['per_apellido_paterno'];
 		$persona->per_apellido_materno = $input['per_apellido_materno'];
 		if (isset($input['dat_adicionales'])){

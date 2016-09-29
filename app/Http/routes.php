@@ -76,6 +76,8 @@ use App\models\roles;
 		Route::get('cursos_disponibles', ['as' => 'cursos_disponibles', 'uses' => 'CursoController@getCursoDisponible']);
 		
 		Route::get('alumno_matriculado/{per_rut}', ['as' => 'alumno_matriculado', 'uses' => 'AlumnoController@getAlumno']);
+		Route::get('alumno_apoderado/{per_rut}', ['as' => 'alumno_apoderado', 'uses' => 'ApoderadoController@getApoderado_alumno']);
+		Route::get('apoderado/{per_rut}', ['as' => 'alumno_apoderado', 'uses' => 'ApoderadoController@getApoderado']);
 		Route::get('validar_curso/{cur_numero}/{cur_letra}/{niv_codigo}', ['as' => 'validar_curso', 'uses' => 'CursoController@getCurso']);
 	});
 

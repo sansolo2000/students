@@ -52,7 +52,13 @@ class ApoderadoController extends Controller
 	public function index($id = NULL)
 	{
 		// Menu
-	
+/* 		$persona_alu = alumno::join('apoderados_alumnos', 'alumnos.alu_codigo', '=', 'apoderados_alumnos.alu_codigo')
+							->join('apoderados', 'apoderados.apo_codigo', '=', 'apoderados_alumnos.apo_codigo')
+							->select('apoderados.per_rut')
+							->where('alumnos.per_rut', '=', '5559858')
+							->first();
+		util::print_a(count($persona_alu),0);
+ */ 		
 		$idusuario = Auth::user()->per_rut;
 		$menu = navegador::crear_menu($idusuario);
 	
@@ -230,7 +236,7 @@ class ApoderadoController extends Controller
 	
 				$personas = $personas->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'apoderados', 'pk' => 'apo_rut', 'clase' => 'container col-md-12', 'col' => 8);
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'apoderados', 'pk' => 'alu_rut', 'clase' => 'container col-md-12', 'col' => 8);
 			return view('mantenedor.index_apoderado')
 						->with('menu', $menu)
 						->with('tablas', $tabla)
@@ -257,13 +263,32 @@ class ApoderadoController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$profesor = Profesor::where('per_rut', '=', $id);
-			$profesor->delete();
-			$asignacion = Asignacion::where('per_rut', '=', $id);
+			$persona = new persona();
+			$record = Alumno::join('personas as pal', 'alumnos.per_rut', '=', DB::raw('pal.per_rut'))
+			->leftjoin('apoderados_alumnos', 'apoderados_alumnos.alu_codigo', '=', 'alumnos.alu_codigo')
+			->leftjoin('apoderados', 'apoderados_alumnos.apo_codigo', '=', 'apoderados.apo_codigo')
+			->leftjoin('personas as pap', DB::raw('pap.per_rut'), '=', 'apoderados.per_rut')
+			->where(DB::raw( 'pal.per_rut' ), '=', $id)
+			->select('pap.per_rut AS apo_rut', 'apoderados.apo_codigo')
+			->first();
+				
+			
+			$persona = Persona::where('personas.per_rut', '=', $record['apo_rut'])->first();
+			
+			$asignacion = new asignacion();
+			$asignacion = Asignacion::where('asignaciones.per_rut', '=', $record['apo_rut'])->first();
 			$asignacion->delete();
-			$persona = Persona::find($id);
+			
+			
+			$apoderado_alumno = new apoderado_alumno();
+			$apoderado_alumno = Apoderado_alumno::where('apoderados_alumnos.apa_codigo', '=', $record['apa_codigo'])->first();
+			$apoderado_alumno->delete();
+			
+			$apoderado = new apoderado();
+			$apoderado = apoderado::find($record['apo_codigo'])->first();
+			$apoderado->delete();
 			$persona->delete();
-			return redirect()->route('profesores.index');
+			return redirect()->route('apoderados.index');
 		}
 	}
 
@@ -335,23 +360,39 @@ class ApoderadoController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$tabla = AlumnoController::arreglo();
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'profesores', 'pk' => 'per_rut', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
-			$record = Persona::select('personas.per_rut', 'personas.per_dv', 'personas.per_nombre', 'personas.per_apellido_paterno', 'personas.per_apellido_materno', 'personas.per_email', DB::raw('"1" as mod_password'), 'profesores.pro_activo')
-			->join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
-			->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
-			->join('profesores', 'profesores.per_rut', '=', 'personas.per_rut')
-			->where('roles.rol_nombre', '=', 'Profesor')
-			->find($id);
+			$tabla = ApoderadoController::arreglo();
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'apoderados', 'pk' => 'alu_rut', 'clase' => 'container col-md-12', 'label' => 'container col-md-4');
+			$record = Alumno::join('personas as pal', DB::raw('pal.per_rut'), '=', 'alumnos.per_rut')
+			->leftjoin('apoderados_alumnos', 'apoderados_alumnos.alu_codigo', '=', 'alumnos.alu_codigo')
+			->leftjoin('apoderados', 'apoderados_alumnos.apo_codigo', '=', 'apoderados.apo_codigo')
+			->leftjoin('personas as pap', DB::raw('pap.per_rut'), '=', 'apoderados.per_rut')
+			->where(DB::raw( 'pal.per_rut' ), '=', $id)
+			->select('alumnos.alu_numero AS alu_numero', 'pal.per_rut AS alu_rut', 
+				'pal.per_dv AS alu_dv', 'pal.per_dv AS alu_dv', 
+				'pal.per_nombre AS alu_nombre', 'pal.per_apellido_paterno AS alu_apellido_paterno', 
+				'pal.per_apellido_materno AS alu_apellido_materno', 'pap.per_rut AS apo_rut', 
+				'pap.per_dv AS apo_dv', 'pap.per_dv AS apo_dv', 'pap.per_nombre AS apo_nombre', 
+				'pap.per_apellido_paterno AS apo_apellido_paterno', 'pap.per_apellido_materno AS apo_apellido_materno', 
+					'pap.per_email AS apo_email', 'apoderados.apo_fono AS apo_fono')
+			->first();
+			//util::print_a($record,0);
+			$curso = Curso::join('alumnos', 'cursos.cur_codigo', '=', 'alumnos.cur_codigo')
+					->join('niveles', 'cursos.niv_codigo', '=', 'niveles.niv_codigo')
+					->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
+					->join('personas', 'profesores.per_rut', '=', 'personas.per_rut')
+					->where('alumnos.per_rut', '=', $id)
+					->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
+					->first();
 				
 				
-			return view('mantenedor.edit')
+			return view('mantenedor.edit_apoderado')
 			->with('record',$record)
+			->with('curso', $curso)
 			->with('menu', $menu)
-			->with('validate', $validate)
+//			->with('validate', $validate)
 			->with('entidad', $entidad)
 			->with('tablas', $tabla)
-			->with('title', 'Ingresar Profesores');
+			->with('title', 'Modificar Apoderados');
 		}
 	}
 
@@ -524,7 +565,6 @@ class ApoderadoController extends Controller
 										$rol = new rol;
 										$rol = Rol::where('rol_nombre', '=', 'Apoderado')->first();
 										
-										
 										$asignacion = new asignacion();
 										$asignacion->rol_codigo = $rol->rol_codigo;
 										$asignacion->per_rut = $rut_apo['numero'];
@@ -537,6 +577,7 @@ class ApoderadoController extends Controller
 
 										$alumno = Alumno::where('alumnos.per_rut', '=', $rut_alu['numero'])
 														->first();
+
 										$apoderado_alumno = new apoderado_alumno();
 										$apoderado_alumno->apo_codigo = $apoderado->apo_codigo;
 										$apoderado_alumno->alu_codigo = $alumno->alu_codigo;
@@ -615,37 +656,98 @@ class ApoderadoController extends Controller
 	public function update($id)
 	{
 		$input = Input::all();
-		$persona = new persona;
-		$persona = Persona::find($id);
-
-		$persona->per_nombre = $input['per_nombre'];
-		$persona->per_nombre_segundo = $input['per_nombre_segundo'];
-		$persona->per_apellido_paterno = $input['per_apellido_paterno'];
-		$persona->per_apellido_materno = $input['per_apellido_materno'];
-		if (!isset($input['mod_password'])){
-			$persona->per_password = Hash::make($input['per_password']);
+		$persona_alu = new persona;
+		$persona_alu = alumno::join('apoderados_alumnos', 'alumnos.alu_codigo', '=', 'apoderados_alumnos.alu_codigo')
+							->join('apoderados', 'apoderados.apo_codigo', '=', 'apoderados_alumnos.apo_codigo')
+							->select('apoderados.per_rut')
+							->where('alumnos.per_rut', '=', $id)
+							->first();
+		
+		if (count($persona_alu) == 0){
+			$rut_apo = util::format_rut($input['apo_rut']);
+			$persona = new persona;
+			$persona_new = new persona;
+			$persona = persona::where('personas.per_rut', '=', $rut_apo['numero'])->first();
+			if (count($persona) == 0){
+				$persona_new->per_rut = $rut_apo['numero'];
+				$persona_new->per_dv = $rut_apo['dv'];
+				$persona_new->per_nombre = $input['apo_nombre'];
+				$persona_new->per_apellido_paterno = $input['apo_apellido_paterno'];
+				$persona_new->per_apellido_materno = $input['apo_apellido_materno'];
+				if (isset($input['dat_password'])){
+					$persona_new->per_password = Hash::make($input['apo_password']);
+				}
+				if (isset($input['dat_adicionales'])){
+					$persona_new->per_email = $input['apo_email'];
+				}
+				$persona_new->save();
+			}
+			$asignacion = new asignacion();
+			$asignacion_new = new asignacion();
+			$asignacion = asignacion::where('asignaciones.per_rut', '=', $rut_apo['numero'])->first();
+			if (count($asignacion) == 0){
+				$rol = new rol();
+				$rol = rol::where('roles.rol_nombre', '=', 'Apoderado')->first();
+				$asignacion_new->rol_codigo = $rol->rol_codigo;
+				$asignacion_new->per_rut = $rut_apo['numero'];
+				$asignacion_new->save();
+			}
+			$apoderado = new apoderado();
+			$apoderado_new = new apoderado();
+			$apoderado = Apoderado::where('apoderados.per_rut', '=', $rut_apo['numero'])->first();
+			if (count($apoderado) == 0){
+				$apoderado_new->apo_fono  	= $input['apo_fono'];
+				$apoderado_new->save();
+			}
+			$apoderado_alumno = new apoderado_alumno();
+			$apoderado_alumno_new = new apoderado_alumno();
+			$apoderado_alumno = apoderado_alumno::join('apoderados', 'apoderados_alumnos.apo_codigo', '=', 'apoderados.apo_codigo')
+											->join('alumnos', 'apoderados_alumnos.alu_codigo', '=', 'alumnos.alu_codigo')
+											->where('alumnos.per_rut', '=', $id)
+											->where('apoderados.per_rut', '=', $rut_apo['numero'])
+											->first();
+			if (count($apoderado_alumno) == 0){
+				$alumno = new alumno();
+				$alumno = alumno::where('alumnos.per_rut', '=', $id)->first();
+				$apoderado_alumno_new->apo_codigo = $apoderado->apo_codigo;
+				$apoderado_alumno_new->alu_codigo = $alumno->alu_codigo;
+				$apoderado_alumno_new->save();
+			}
 		}
-		$persona->per_email = $input['per_email'];
-		$persona->save();
-
-		$profesor = new profesor();
-		$profesor = Profesor::where('profesores.per_rut', '=', $id)->first();
-		$profesor->pro_activo  	= isset($input['pro_activo']) ? 1 : 0;
-		$profesor->save();
-
-		return redirect()->route('profesores.index');
+		return redirect()->route('apoderados.index');
 	}
 
-	public function getRol(Request $request, $per_rut){
+	public function getApoderado_alumno(Request $request, $per_rut){
 		$rut = util::format_rut($per_rut);
+		$persona = new persona();
+		$records = Persona::leftjoin('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
+							->leftjoin('profesores', 'profesores.per_rut', '=', 'personas.per_rut')
+							->leftjoin('apoderados', 'apoderados.per_rut', '=', 'personas.per_rut')
+							->where('personas.per_rut', '=', $rut['numero'])
+							->select(DB::raw('alumnos.per_rut as alumno, profesores.per_rut as profesor, apoderados.per_rut as apoderado'))
+							->get();
 		if ($request->ajax()){
-			$persona = new persona();
-			$records = Persona::join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
-			->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
-			->where('personas.per_rut', '=', $rut['numero'])->get();
 			return response()->json($records);
 		}
+		else{
+			util::print_a($records,0);
+		}
 	}
+	public function getApoderado(Request $request, $per_rut){
+		$rut = util::format_rut($per_rut);
+		$persona = new persona();
+		$records = Persona::join('apoderados', 'apoderados.per_rut', '=', 'personas.per_rut')
+		->where('apoderados.per_rut', '=', $rut['numero'])
+		->select('personas.per_nombre', 'personas.per_apellido_paterno', 'personas.per_apellido_materno', 'personas.per_email', 'apoderados.apo_fono')
+		->get();
+		if ($request->ajax()){
+			return response()->json($records);
+		}
+		else{
+			util::print_a($records,0);
+		}
+	}
+	
 	public function arreglo(){
 		
 		
@@ -729,6 +831,16 @@ class ApoderadoController extends Controller
 							'select'		=> 0,
 							'filter'		=> 3,
 							'enable'		=> true);
+		$tabla[] = array(	'nombre' 		=> 'Fono',
+							'campo'			=> 'apo_fono',
+							'clase' 		=> 'container col-md-8',
+							'validate'		=> '',
+							'descripcion'	=> 'Fono',
+							'value'			=> '',
+							'tipo'			=> 'input',
+							'select'		=> 0,
+							'filter'		=> 3,
+							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Modificar Password',
 							'campo'			=> 'mod_password',
 							'clase' 		=> 'container col-md-1',
@@ -763,21 +875,21 @@ class ApoderadoController extends Controller
 	}
 
 	public function validador(){
-		$validate = "
-
+		$validate = "";
+/*
 				$().ready(function () {
 					$('#myform').validate({
 						rules: {
-							'per_rut'				:	{required: true, minlength: 5, maxlength: 50},
-							'per_nombre'			:	{required: true, minlength: 2, maxlength: 50},
-							'per_apellido_paterno'	:	{required: true, minlength: 2, maxlength: 50},
-							'per_apellido_materno'	:	{required: true, minlength: 2, maxlength: 50},
-							'per_email'				:	{required: true, email: true,  minlength: 2, maxlength: 50},
-							'per_password'			:	{required: true, minlength: 2, maxlength: 15},
-							'per_password_re'		:	{required: true, minlength: 2, maxlength: 15, equalTo : '#per_password'}
+							'apo_rut'				:	{required: true, minlength: 5, maxlength: 50},
+							'apo_nombre'			:	{required: true, minlength: 2, maxlength: 50},
+							'apo_apellido_paterno'	:	{required: true, minlength: 2, maxlength: 50},
+							'apo_apellido_materno'	:	{required: true, minlength: 2, maxlength: 50},
+							'apo_email'				:	{required: true, email: true,  minlength: 2, maxlength: 50},
+							'apo_password'			:	{required: true, minlength: 2, maxlength: 15},
+							'apo_password_re'		:	{required: true, minlength: 2, maxlength: 15, equalTo : '#per_password'}
 						}
-					});
-					if ($('#mod_password').is(':checked')){
+					});";
+/*					if ($('#mod_password').is(':checked')){
 						$('#per_password').prop('disabled', true);
 						$('#per_password_re').prop('disabled', true);
 					}
@@ -792,7 +904,7 @@ class ApoderadoController extends Controller
 						}
 					});
 
-				});";
+				});";*/
 		return $validate;
 	}
 
