@@ -84,6 +84,7 @@ class IndexController extends Controller
 					->orderBy('rol_orden', 'ASC')
 					->lists('rol_nombre', 'rol_codigo');
 		$arrRol = util::array_indice($arrRol,-1);
+		
 		return View::make('index', array('formulario' => '/', 'varRol' => $arrRol, 'Error' => $error));
 	}
 }

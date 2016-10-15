@@ -32,7 +32,7 @@
 	</div>
 <div class="container">
   <div class="row" style="height: 400px">
-	Prueba
+	&nbsp;
   </div>
 </div>
 

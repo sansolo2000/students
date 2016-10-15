@@ -99,10 +99,12 @@ else {
 				'cur_numero'			:	{required: true, number: true},
 				'cur_letra'				:	{required: true, minlength: 1, maxlength: 1},
 				'niv_nombre'			:	{required: true, min:1},
+				'any_numero'			:	{required: true, min:1},
 				'pro_nombre'			:	{required: true, min:1},
 			},
 				messages: {
 				'niv_nombre'			: { min: 'Seleccione nivel' },
+				'any_numero'			: { min: 'Seleccione a\u00f1o' },
 				'pro_nombre'			: { min: 'Seleccione profesor' }
 			},
 		});
@@ -121,15 +123,15 @@ else {
 			{{ Form::model($record, array('route' => array($controller, $record[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
 				<legend>{{ $title}}</legend>
 					<div class="form-group col-sm-12">
-						<div class="col-sm-2">
+						<div class="col-sm-3">
 							<label for="curso" class="control-label">Curso:</label>
 						</div>
-						<div class="col-sm-10">
+						<div class="col-sm-9">
 							<input class="form-control" id="col_nombre" name="col_nombre" value="{{ $col_nombre }}" disabled="disabled" type="text">
 						</div>
 					</div>
 					<div class="form-group col-sm-12">
-						<div class="col-sm-2">
+						<div class="col-sm-3">
 							<label for="curso" class="control-label">Curso:</label>
 						</div>
 						<div class="col-sm-3">
@@ -140,19 +142,27 @@ else {
 							<input class="form-control" id="cur_letra" name="cur_letra" value="{{ $record['cur_letra'] }}" placeholder="Letra" type="text">
 							<input id="hid_cur_letra" name="hid_cur_letra" value="{{ $record['cur_letra'] }}" type="hidden">
 						</div>
-						<div class="col-sm-4">
+						<div class="col-sm-3">
 							{{ Form::select('niv_nombre', $niv_nombre, $record['niv_codigo'], ['id' => 'niv_nombre', 'class' => 'form-control', 'name' => 'niv_nombre' ]) }}								
 							<input id="hid_niv_nombre" name="hid_niv_nombre" value="{{ $record['niv_codigo'] }}" type="hidden">
 						</div>
 					</div>
 					<div class="form-group col-sm-12">
-						<div class="col-sm-2">
+						<div class="col-sm-3">
 							<label for="curso" class="control-label">Profesor:</label>
 						</div>
-						<div class="col-sm-10">
+						<div class="col-sm-9">
 							<select class="form-control"  id="pro_nombre" name="pro_nombre">
 							<!-- Dropdown List Option -->
 							</select>
+						</div>
+					</div>
+					<div class="form-group col-sm-12">
+						<div class="col-sm-3">
+							<label for="curso" class="control-label">A&ntilde;o:</label>
+						</div>
+						<div class="col-sm-9">
+							{{ Form::select('any_numero', $any_numero, $record['any_codigo'], ['id' => 'any_numero', 'class' => 'form-control', 'name' => 'any_numero' ]) }}								
 						</div>
 					</div>
 					<div class="form-group col-sm-12">

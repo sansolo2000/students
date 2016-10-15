@@ -15,6 +15,9 @@
 			}			
 		}
 		public static function array_indice($datos, $default){
+			if ($default == 0){
+				$array_retorno[0] = 'Todos';
+			}
 			if ($default == -1){
 				$array_retorno[-1] = ':: Seleccionar ::';
 			}
@@ -47,5 +50,66 @@
 		}
 		public static function obtener_url(){
 			return '/localhost/students/public/';
+		}
+		public static function alfabeto($position){
+			$alfabeto[] = 'A';
+			$alfabeto[] = 'B';
+			$alfabeto[] = 'C';
+			$alfabeto[] = 'D';
+			$alfabeto[] = 'E';
+			$alfabeto[] = 'F';
+			$alfabeto[] = 'G';
+			$alfabeto[] = 'H';
+			$alfabeto[] = 'I';
+			$alfabeto[] = 'J';
+			$alfabeto[] = 'K';
+			$alfabeto[] = 'L';
+			$alfabeto[] = 'M';
+			$alfabeto[] = 'N';
+			$alfabeto[] = 'O';
+			$alfabeto[] = 'P';
+			$alfabeto[] = 'Q';
+			$alfabeto[] = 'R';
+			$alfabeto[] = 'S';
+			$alfabeto[] = 'T';
+			$alfabeto[] = 'U';
+			$alfabeto[] = 'V';
+			$alfabeto[] = 'W';
+			$alfabeto[] = 'X';
+			$alfabeto[] = 'Y';
+			$alfabeto[] = 'Z';
+			$alfabeto[] = 'AA';
+			$alfabeto[] = 'AB';
+			$alfabeto[] = 'AC';
+			$alfabeto[] = 'AD';
+			$alfabeto[] = 'AE';
+			$alfabeto[] = 'AF';
+			$alfabeto[] = 'AG';
+			$alfabeto[] = 'AH';
+			$alfabeto[] = 'AI';
+			$alfabeto[] = 'AJ';
+			$alfabeto[] = 'AK';
+			$alfabeto[] = 'AL';
+			$alfabeto[] = 'AM';
+			$alfabeto[] = 'AN';
+			$alfabeto[] = 'AO';
+			$alfabeto[] = 'AP';
+			$alfabeto[] = 'AQ';
+			$alfabeto[] = 'AR';
+			$alfabeto[] = 'AS';
+			$alfabeto[] = 'AT';
+			$alfabeto[] = 'AU';
+			$alfabeto[] = 'AV';
+			$alfabeto[] = 'AW';
+			$alfabeto[] = 'AX';
+			$alfabeto[] = 'AY';
+			$alfabeto[] = 'AZ';
+			if ($position == 0){
+				return $alfabeto;
+			}
+			else{
+				return $alfabeto[$position];
+			}
+			
 		}
 	}

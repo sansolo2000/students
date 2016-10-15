@@ -15,6 +15,7 @@ use Session;
 class AplicacionController extends Controller
 {
 	public $apl_nombre;
+	public $apl_descripcion;
 	public $Privilegio_modulo = 'Aplicaciones';
 	public $paginate = 10;
 	
@@ -63,7 +64,7 @@ class AplicacionController extends Controller
 				}
 				$aplicaciones = $aplicaciones->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => 'Apliaciones', 'controller' => '/'.util::obtener_url().'aplicaciones', 'pk' => 'apl_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 4);
+			$entidad = array('Nombre' => 'Aplicaciones', 'controller' => '/'.util::obtener_url().'aplicaciones', 'pk' => 'apl_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
@@ -119,6 +120,7 @@ class AplicacionController extends Controller
 		$aplicacion = new aplicacion;
 		$input = Input::all();
 		$aplicacion->apl_nombre 		= $input['apl_nombre'];
+		$aplicacion->apl_descripcion 	= $input['apl_descripcion'];
 		$aplicacion->apl_orden  		= $input['apl_orden'];
 		$aplicacion->apl_activo  		= isset($input['apl_activo']) ? 1 : 0;
 		$aplicacion->save();
@@ -158,9 +160,10 @@ class AplicacionController extends Controller
 		$aplicacion = new Aplicacion;
 		$aplicacion = Aplicacion::find($id);
 		$input = Input::all();
-		$aplicacion->apl_nombre = $input['apl_nombre'];
-		$aplicacion->apl_orden  = $input['apl_orden'];
-		$aplicacion->apl_activo  = isset($input['apl_activo']) ? 1 : 0;
+		$aplicacion->apl_nombre 		= $input['apl_nombre'];
+		$aplicacion->apl_descripcion 	= $input['apl_descripcion'];
+		$aplicacion->apl_orden  		= $input['apl_orden'];
+		$aplicacion->apl_activo  		= isset($input['apl_activo']) ? 1 : 0;
 		$aplicacion->save();
 		return redirect()->route('aplicaciones.index');
 	}
@@ -174,6 +177,16 @@ class AplicacionController extends Controller
 							'tipo'			=> 'input',
 							'select'		=> 0,
 							'value'			=> $this->apl_nombre,
+							'filter'		=> 1,
+							'enable'		=> true);
+		$tabla[] = array(	'nombre' 		=> 'Descripción',
+							'campo'			=> 'apl_descripcion',
+							'clase' 		=> 'container col-md-5',
+							'validate'		=> '',
+							'descripcion'	=> 'Descripci&oacute;n',
+							'tipo'			=> 'input',
+							'select'		=> 0,
+							'value'			=> $this->apl_descripcion,
 							'filter'		=> 1,
 							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Orden',
@@ -206,6 +219,7 @@ class AplicacionController extends Controller
 						rules: {
 	
 							'apl_nombre'		:	{required: true, minlength: 5, maxlength: 50},
+							'apl_descripcion'	:	{required: true, minlength: 5, maxlength: 50},
 							'apl_orden'			:	{required: true, number: true},
 							}
 					});

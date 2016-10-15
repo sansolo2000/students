@@ -84,75 +84,79 @@ else {
 <div class="{{$entidad['clase']}}">
 			<div class="panel panel-primary" >
 				<div class="panel-heading">
-		    		<h3 class="panel-title">Curso</h3>
+		    		<h3 class="panel-title">{{ $title}}</h3>
 		  		</div>
 		  		<div class="panel-body">
 					<div class="col-sm-12">
 						<input class="form-control" id="cur_nombre" name="cur_nombre" value="{{ $curso->name }}" type="text" disabled="disabled">
 			  		</div>
-					<fieldset>
-						<?php 
-							$controller = $entidad['controller'].'.update';
-						?>
-						{{ Form::model($asignatura, array('route' => array($controller, $asignatura[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
-							<legend>{{ $title}}</legend>
-								<div class="form-group col-sm-12">
-									<div class="col-sm-4">
-										<label for="curso" class="control-label">Asignatura:</label>
+					<div class="col-sm-12">
+						&nbsp:
+			  		</div>
+					<div class="form-group col-sm-12">
+						<fieldset>
+							<?php 
+								$controller = $entidad['controller'].'.update';
+							?>
+							{{ Form::model($asignatura, array('route' => array($controller, $asignatura[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
+									<div class="form-group col-sm-12">
+										<div class="col-sm-4">
+											<label for="curso" class="control-label">Asignatura:</label>
+										</div>
+										<div class="col-sm-8">
+											<input class="form-control" id="asg_nombre" name="asg_nombre" type="text" value="{{ $asignatura->asg_nombre }}">
+											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
+										</div>
 									</div>
-									<div class="col-sm-8">
-										<input class="form-control" id="asg_nombre" name="asg_nombre" type="text" value="{{ $asignatura->asg_nombre }}">
-										<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
+									<div class="form-group col-sm-12">
+										<div class="col-sm-4">
+											<label for="curso" class="control-label">Profesor:</label>
+										</div>
+										<div class="col-sm-8">
+											<select class="form-control"  id="pro_nombre" name="pro_nombre">
+											<!-- Dropdown List Option -->
+											</select>
+										</div>
 									</div>
-								</div>
-								<div class="form-group col-sm-12">
-									<div class="col-sm-4">
-										<label for="curso" class="control-label">Profesor:</label>
+									<div class="form-group col-sm-12">
+										<div class="col-sm-4">
+											<label for="curso" class="control-label">Orden:</label>
+										</div>
+										<div class="col-sm-5">
+											<input class="form-control" id="asg_orden" name="asg_orden" value="{{ $asignatura->asg_orden }}" type="text">
+										</div>
+										<div class="col-sm-3">
+										</div>
 									</div>
-									<div class="col-sm-8">
-										<select class="form-control"  id="pro_nombre" name="pro_nombre">
-										<!-- Dropdown List Option -->
-										</select>
+									<div class="form-group col-sm-12">
+										<div class="col-sm-4">
+											<label for="curso" class="control-label">Activo:</label>
+										</div>
+										<div class="col-sm-8">
+											<?php 
+												if ($asignatura->asg_activo == 1){
+													$mostrar = 'checked';		
+												}
+												else{
+													$mostrar='';
+												}
+											?>
+											<input type="checkbox" id="asg_activo" name="asg_activo" <?php echo $mostrar; ?>>
+										</div>
 									</div>
-								</div>
-								<div class="form-group col-sm-12">
-									<div class="col-sm-4">
-										<label for="curso" class="control-label">Orden:</label>
-									</div>
-									<div class="col-sm-5">
-										<input class="form-control" id="asg_orden" name="asg_orden" value="{{ $asignatura->asg_orden }}" type="text">
-									</div>
-									<div class="col-sm-3">
-									</div>
-								</div>
-								<div class="form-group col-sm-12">
-									<div class="col-sm-4">
-										<label for="curso" class="control-label">Activo:</label>
-									</div>
-									<div class="col-sm-8">
+									<div class="col-sm-6 col-sm-offset-3" style="text-align: center;">
 										<?php 
-											if ($asignatura->asg_activo == 1){
-												$mostrar = 'checked';		
-											}
-											else{
-												$mostrar='';
-											}
+											$controller = $entidad['controller'];
 										?>
-										<input type="checkbox" id="asg_activo" name="asg_activo" <?php echo $mostrar; ?>>
+										<a href="../<?php echo $controller ?>" class="btn btn-default">
+												<span>Volver</span>
+										</a>
+									    {{ Form::button('Guardar', array('class'=>'btn btn-default', 'type'=>'submit')) }}    
+										
 									</div>
-								</div>
-								<div class="col-sm-6 col-sm-offset-3" style="text-align: center;">
-									<?php 
-										$controller = $entidad['controller'];
-									?>
-									<a href="../<?php echo $controller ?>" class="btn btn-default">
-											<span>Volver</span>
-									</a>
-								    {{ Form::button('Guardar', array('class'=>'btn btn-default', 'type'=>'submit')) }}    
-									
-								</div>
-						{!! Form::close() !!}
-					</fieldset>
+							{!! Form::close() !!}
+						</fieldset>
+			  		</div>
 		  		</div>
 			</div>
 </div>

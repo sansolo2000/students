@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Hash;
 use Session;
 use DB;
 use Redirect;
+use App\models\apoderado_alumno;
+use App\models\calificacion;
 
 
 class AlumnoController extends Controller
@@ -150,6 +152,7 @@ class AlumnoController extends Controller
 									->join('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
 									->where('roles.rol_nombre', '=', 'Alumno')
 									->where('alumnos.cur_codigo', '=', -1)
+									->where('alumnos.alu_activo', '=', 1)
 									->orderBy('alumnos.alu_numero', 'ASC')
 									->orderBy('personas.per_apellido_paterno', 'ASC')
 									->select()
@@ -162,6 +165,7 @@ class AlumnoController extends Controller
 									->join('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
 									->where('roles.rol_nombre', '=', 'Alumno')
 									->where('alumnos.cur_codigo', '=', $this->cur_codigo)
+									->where('alumnos.alu_activo', '=', 1)
 									->orderBy('alumnos.alu_numero', 'ASC')
 									->orderBy('personas.per_apellido_paterno', 'ASC')
 									->select()
@@ -173,6 +177,7 @@ class AlumnoController extends Controller
 									->join('alumnos', 'alumnos.per_rut', '=', 'personas.per_rut')
 									->where('roles.rol_nombre', '=', 'Alumno')
 									->where('alumnos.cur_codigo', '=', $this->cur_codigo)
+									->where('alumnos.alu_activo', '=', 1)
 									->orderBy('alumnos.alu_numero', 'ASC')
 									->orderBy('personas.per_apellido_paterno', 'ASC')
 									->select();
@@ -222,17 +227,60 @@ class AlumnoController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$cantidad = Asignacion::where('per_rut', '=', $id)->count();
-			$alumno = Alumno::where('per_rut', '=', $id);
-			$alumno->delete();
-			$asignacion = Asignacion::join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')
-									->where('rol_nombre', '=', 'Alumno')
-									->where('per_rut', '=', $id);
-			$asignacion->delete();
+			$rol = new rol();
+			$rol = rol::where('rol_nombre', '=', 'Alumno')->first();
+			
+			$calificacion = new calificacion();
+			$calificacion = calificacion::join('alumnos', 'calificaciones.alu_codigo', '=', 'alumnos.alu_codigo')
+										->where('alumnos.per_rut', '=', $id);
+			if($calificacion->count() == 0){
+				$asignacion = new asignacion();
+				$asignacion = Asignacion::where('per_rut', '=', $id)->where('rol_codigo', '=', $rol->rol_codigo)->first();
+				$alumno = new alumno();
+				$alumno = Alumno::where('per_rut', '=', $id)->first();
 				
-			if ($cantidad==1){
-				$persona = Persona::find($id);
-				$persona->delete();
+				$apoderado_alumno = new apoderado_alumno();
+				$apoderado_alumno = apoderado_alumno::where('alu_codigo', '=', $alumno->alu_codigo)->first();
+				
+				if (count($asignacion) > 0){
+					$asignacion->delete();
+				}
+					
+				if(count($apoderado_alumno) > 0){ 
+					$apoderado = new apoderado();
+					$apoderado = apoderado::where('apo_codigo', '=', $apoderado_alumno->apo_codigo)->first();
+				
+					if (count($apoderado_alumno) > 0){
+						$apoderado_alumno->delete();
+					}
+					
+					if (count($apoderado) > 0){
+						$apoderado->delete();
+					}
+					
+					$persona_apoderado = new persona();
+					$persona_apoderado = persona::where('per_rut', '=', $apoderado->per_rut)->first();
+					if (count($persona_apoderado) > 0){
+						$persona_apoderado->delete();
+					}
+				
+					
+				}			
+				if (count($alumno) > 0){
+					$alumno->delete();
+				}
+	
+				$persona_alumno = new persona();
+				$persona_alumno = persona::where('per_rut', '=', $alumno->per_rut)->first();
+				if (count($persona_alumno) > 0){
+					$persona_alumno->delete();
+				}
+			}
+			else {
+				$alumno = new alumno();
+				$alumno = Alumno::where('per_rut', '=', $id);
+				$alumno->alu_activo = 0;
+				$alumno->save();
 			}
 			return redirect()->route('alumnos.index');
 		}
@@ -302,6 +350,7 @@ class AlumnoController extends Controller
 		$alumno->per_rut = $rut['numero'];
 		$alumno->alu_numero = $input['hid_numero'];
 		$alumno->cur_codigo = $input['cur_codigo'];
+		$alumno->alu_activo = 1;
 		
 		$alumno->save();
 
@@ -412,7 +461,7 @@ class AlumnoController extends Controller
 							->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
 							->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
 							->where('cursos.cur_codigo', '=', $id)
-							->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
+							->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, " ", niveles.niv_nombre) as name'),DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
 							->first();
 		$alumnos = Alumno::join('personas', 'alumnos.per_rut', '=', 'personas.per_rut')
 							->select('personas.per_rut', 'alumnos.alu_numero', 'personas.per_dv', 'personas.per_nombre', 'personas.per_nombre_segundo', 'personas.per_apellido_paterno', 'personas.per_apellido_materno', 'personas.per_email')
@@ -480,8 +529,8 @@ class AlumnoController extends Controller
 			})->download('xls');
 		}
 		else{
-			Excel::create('Curso', function($excel) use($alumnos) {
-				$excel->sheet('Curso', function($sheet){
+			Excel::create($curso->name.' - Alumno', function($excel) use($alumnos, $curso) {
+				$excel->sheet($curso->name, function($sheet) use ($curso){
 					$data[] = array('Numero'			=> '',
 							'Rut' 				=> '',
 							'Primer Nombre' 	=> '',
@@ -491,7 +540,47 @@ class AlumnoController extends Controller
 							'E-Mail'			=> ''
 		
 					);
-					$sheet->fromArray($data);
+					$sheet->row(2, array(
+							'','Curso: ', $curso->name
+					));
+					$sheet->row(3, array(
+							'','Profesor: ', $curso->profesor
+					));
+					$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
+					->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+					->where('alumnos.cur_codigo', '=', $curso->cur_codigo)
+					->select(DB::raw('max(alumnos.alu_numero) maximo'))
+					->first();
+					$numero = $persona->maximo + 1;
+					for ($i = $numero; $i <= 50; $i++) {
+						$sheet->row($i+5, array(
+								$i
+						));
+					}
+					$sheet->fromArray($data, null, 'A5', false, true);
+					$sheet->setBorder('B2:D3', 'thin');
+					$sheet->mergeCells('C1:D1');
+					$sheet->mergeCells('C2:D2');
+					$sheet->setBorder('A5:G55', 'thin');
+					$sheet->cells('B2:B3', function($cells) {
+						$cells->setBackground('#2fa4e7');
+						$cells->setFontColor('#ffffff');
+					});
+						$sheet->cells('A5:G5', function($cells) {
+							$cells->setBackground('#2fa4e7');
+							$cells->setFontColor('#ffffff');
+						});
+							$sheet->setWidth(array(
+									'A'     =>  9,
+									'B'     =>  15,
+									'C'     =>  25,
+									'D'     =>  25,
+									'E'     =>  25,
+									'F'     =>  25,
+									'G'     =>  45
+										
+							));
+								
 				});
 			})->download('xls');
 		}

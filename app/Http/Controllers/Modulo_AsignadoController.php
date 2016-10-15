@@ -173,6 +173,7 @@ class Modulo_AsignadoController extends Controller
 			$modulo_asignado->mas_add 			= 3;
 			$modulo_asignado->mas_edit		 	= 3;
 			$modulo_asignado->mas_delete		= 3;
+			$modulo_asignado->mas_especial		= 3;
 			$modulo_asignado->mas_activo  		= 1;
 		}
 		else{
@@ -180,6 +181,7 @@ class Modulo_AsignadoController extends Controller
 			$modulo_asignado->mas_add 			= isset($input['mas_add']) ? 1 : 0;
 			$modulo_asignado->mas_edit		 	= isset($input['mas_edit']) ? 1 : 0;
 			$modulo_asignado->mas_delete		= isset($input['mas_delete']) ? 1 : 0;
+			$modulo_asignado->mas_especial		= isset($input['mas_especial']) ? 1 : 0;
 			$modulo_asignado->mas_activo  		= isset($input['mas_activo']) ? 1 : 0;
 		}
 		$modulo_asignado->save();
@@ -242,6 +244,7 @@ class Modulo_AsignadoController extends Controller
 		$modulo_asignado->mas_edit		 	= isset($input['mas_edit']) ? 1 : 0;
 		$modulo_asignado->mas_delete		= isset($input['mas_delete']) ? 1 : 0;
 		$modulo_asignado->mas_activo  		= isset($input['mas_activo']) ? 1 : 0;
+		$modulo_asignado->mas_especial 		= isset($input['mas_especial']) ? 1 : 0;
 		$modulo_asignado->save();
 		return redirect()->route('perfiles.index');
 	}
@@ -330,6 +333,16 @@ class Modulo_AsignadoController extends Controller
 							'tipo'			=> 'check',
 							'select'		=> 0,
 							'filter'		=> 0,
+							'enable'		=> true);
+		$tabla[] = array(	'nombre' 		=> 'Especial',
+							'campo'			=> 'mas_especial',
+							'clase' 		=> 'container col-md-1',
+							'validate'		=> '',
+							'descripcion'	=> 'Especial',
+							'value'			=> '',
+							'tipo'			=> 'check',
+							'select'		=> 0,
+							'filter'		=> 3,
 							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Estado',
 							'campo'			=> 'mas_activo',

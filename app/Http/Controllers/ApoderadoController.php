@@ -51,14 +51,6 @@ class ApoderadoController extends Controller
 
 	public function index($id = NULL)
 	{
-		// Menu
-/* 		$persona_alu = alumno::join('apoderados_alumnos', 'alumnos.alu_codigo', '=', 'apoderados_alumnos.alu_codigo')
-							->join('apoderados', 'apoderados.apo_codigo', '=', 'apoderados_alumnos.apo_codigo')
-							->select('apoderados.per_rut')
-							->where('alumnos.per_rut', '=', '5559858')
-							->first();
-		util::print_a(count($persona_alu),0);
- */ 		
 		$idusuario = Auth::user()->per_rut;
 		$menu = navegador::crear_menu($idusuario);
 	
@@ -82,27 +74,25 @@ class ApoderadoController extends Controller
 			// Descripcion de tabla.
 			$exist = 0;
 			if (!empty($_POST)){
-				if (!(empty($_POST['alu_numero']) && empty($_POST['alu_rutbak'])&& empty($_POST['apo_rutbak']) 
-						&& empty($_POST['per_nombre']) && empty($_POST['per_apellido_paterno']) 
-						&& empty($_POST['per_apellido_materno']) && empty($_POST['per_email']))){
+				if (!(empty($_POST['alu_numero']) && empty($_POST['alu_rut'])&& empty($_POST['apo_rut']) 
+						&& empty($_POST['alu_nombre']) && empty($_POST['alu_apellido_paterno']) 
+						&& empty($_POST['apo_rut']) && empty($_POST['apo_nombre'])&& empty($_POST['apo_apellido_paterno']))){
 							$this->alu_numero 			= $_POST['alu_numero'];
-							$this->alu_rut 				= $_POST['alu_rutbak'];
+							$this->alu_rut 				= $_POST['alu_rut'];
 							$this->alu_nombre 			= $_POST['alu_nombre'];
 							$this->alu_apellido_paterno = $_POST['alu_apellido_paterno'];
-							$this->apo_rut 				= $_POST['apo_rutbak'];
+							$this->apo_rut 				= $_POST['apo_rut'];
 							$this->apo_nombre 			= $_POST['apo_nombre'];
 							$this->apo_apellido_paterno = $_POST['apo_apellido_paterno'];
-							$this->apo_email 			= $_POST['apo_email'];
 
 							Session::put('search.apoderado_persona', array(
 									'alu_numero' 			=> $this->alu_numero,
-									'alu_rutbak' 			=> $this->per_rut,
-									'alu_nombre' 			=> $this->per_nombre,
-									'alu_apellido_paterno' 	=> $this->per_apellido_paterno,
-									'apo_rutbak' 			=> $this->apo_rutbak,
+									'alu_rut'	 			=> $this->alu_rut,
+									'alu_nombre' 			=> $this->alu_nombre,
+									'alu_apellido_paterno' 	=> $this->alu_apellido_paterno,
+									'apo_rut' 				=> $this->apo_rut,
 									'apo_nombre' 			=> $this->apo_nombre,
-									'apo_apellido_paterno' 	=> $this->apo_apellido_paterno,
-									'apo_email' 			=> $this->apo_email));
+									'apo_apellido_paterno' 	=> $this->apo_apellido_paterno));
 							if (Session::has('search.apoderado_curso')){
 								$exist = 1;
 								$search = Session::get('search.apoderado_curso');
@@ -115,13 +105,12 @@ class ApoderadoController extends Controller
 						$exist = 2;
 						$search = Session::get('search.apoderado_persona');
 							$this->alu_numero 			= $_POST['alu_numero'];
-							$this->alu_rut 				= $_POST['alu_rutbak'];
+							$this->alu_rut 				= $_POST['alu_rut'];
 							$this->alu_nombre 			= $_POST['alu_nombre'];
 							$this->alu_apellido_paterno = $_POST['alu_apellido_paterno'];
-							$this->apo_rut 				= $_POST['apo_rutbak'];
+							$this->apo_rut 				= $_POST['apo_rut'];
 							$this->apo_nombre 			= $_POST['apo_nombre'];
 							$this->apo_apellido_paterno = $_POST['apo_apellido_paterno'];
-							$this->apo_email 			= $_POST['apo_email'];
 					}
 					if (Session::has('search.apoderado_curso')){
 						$exist = 1;
@@ -137,29 +126,27 @@ class ApoderadoController extends Controller
 					if (Session::has('search.apoderado_persona')){
 						$exist = 2;
 						$search = Session::get('search.apoderado_persona');
-							$this->alu_numero 			= $_POST['alu_numero'];
-							$this->alu_rut 				= $_POST['alu_rutbak'];
-							$this->alu_nombre 			= $_POST['alu_nombre'];
-							$this->alu_apellido_paterno = $_POST['alu_apellido_paterno'];
-							$this->apo_rut 				= $_POST['apo_rutbak'];
-							$this->apo_nombre 			= $_POST['apo_nombre'];
-							$this->apo_apellido_paterno = $_POST['apo_apellido_paterno'];
-							$this->apo_email 			= $_POST['apo_email'];
+							$this->alu_numero 			= $search['alu_numero'];
+							$this->alu_rut 				= $search['alu_rut'];
+							$this->alu_nombre 			= $search['alu_nombre'];
+							$this->alu_apellido_paterno = $search['alu_apellido_paterno'];
+							$this->apo_rut 				= $search['apo_rut'];
+							$this->apo_nombre 			= $search['apo_nombre'];
+							$this->apo_apellido_paterno = $search['apo_apellido_paterno'];
 					}
 				}
 			}
-			else{
+ 			else{
 				if (Session::has('search.apoderado_persona')){
-					$exist = 2;
+					$exist = 0;
 					$search = Session::get('search.apoderado_persona');
-							$this->alu_numero 			= $_POST['alu_numero'];
-							$this->alu_rut 				= $_POST['alu_rutbak'];
-							$this->alu_nombre 			= $_POST['alu_nombre'];
-							$this->alu_apellido_paterno = $_POST['alu_apellido_paterno'];
-							$this->apo_rut 				= $_POST['apo_rutbak'];
-							$this->apo_nombre 			= $_POST['apo_nombre'];
-							$this->apo_apellido_paterno = $_POST['apo_apellido_paterno'];
-							$this->apo_email 			= $_POST['apo_email'];
+							$this->alu_numero 			= $search['alu_numero'];
+							$this->alu_rut 				= $search['alu_rut'];
+							$this->alu_nombre 			= $search['alu_nombre'];
+							$this->alu_apellido_paterno = $search['alu_apellido_paterno'];
+							$this->apo_rut 				= $search['apo_rut'];
+							$this->apo_nombre 			= $search['apo_nombre'];
+							$this->apo_apellido_paterno = $search['apo_apellido_paterno'];
 				}
 				if (Session::has('search.apoderado_curso')){
 					$exist = 1;
@@ -167,7 +154,7 @@ class ApoderadoController extends Controller
 					$this->cur_codigo			= $search['cur_codigo'];
 				}
 			}
-	
+ 
 			$tabla = ApoderadoController::arreglo();
 			if ($exist == 0){
 				$personas = DB::table('alumnos as al')
@@ -209,6 +196,9 @@ class ApoderadoController extends Controller
 								->orderBy('pa.per_apellido_paterno', 'ASC')
 								->select('al.alu_numero AS alu_numero', 'pa.per_rut AS alu_rut', 'pa.per_dv AS alu_dv', 'pa.per_nombre AS alu_nombre', 'pa.per_apellido_paterno AS alu_apellido_paterno', 'pe.per_rut AS apo_rut', 'pe.per_dv AS apo_dv', 'pe.per_nombre AS apo_nombre', 'pe.per_apellido_paterno AS apo_apellido_paterno', 'pe.per_email AS apo_email');
 				
+				if ($this->alu_numero != ''){
+					$personas = $personas->where('al.alu_numero', 'LIKE', '%'.$this->alu_numero.'%');
+				}
 				if ($this->alu_rut != ''){
 					$personas = $personas->where('pa.per_rut', 'LIKE', '%'.$this->alu_rut.'%');
 				}
@@ -218,11 +208,8 @@ class ApoderadoController extends Controller
 				if ($this->alu_apellido_paterno != ''){
 					$personas = $personas->where('pa.per_apellido_paterno', 'LIKE', '%'.$this->alu_apellido_paterno.'%');
 				}
-				if ($this->alu_nombre != ''){
-					$personas = $personas->where('pa.per_nombre', 'LIKE', '%'.$this->alu_nombre.'%');
-				}
-				if ($this->alu_apellido_paterno != ''){
-					$personas = $personas->where('pa.per_apellido_paterno', 'LIKE', '%'.$this->alu_apellido_paterno.'%');
+				if ($this->apo_rut != ''){
+					$personas = $personas->where('pe.per_rut', 'LIKE', '%'.$this->apo_rut.'%');
 				}
 				if ($this->apo_nombre != ''){
 					$personas = $personas->where('pe.per_nombre', 'LIKE', '%'.$this->apo_nombre.'%');
@@ -230,10 +217,6 @@ class ApoderadoController extends Controller
 				if ($this->apo_apellido_paterno != ''){
 					$personas = $personas->where('pe.per_apellido_paterno', 'LIKE', '%'.$this->apo_apellido_paterno.'%');
 				}
-				if ($this->apo_email != ''){
-					$personas = $personas->where('pe.per_email', 'LIKE', '%'.$this->apo_email.'%');
-				}
-	
 				$personas = $personas->paginate($this->paginate);
 			}
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'apoderados', 'pk' => 'alu_rut', 'clase' => 'container col-md-12', 'col' => 8);
@@ -419,85 +402,102 @@ class ApoderadoController extends Controller
 									'pe.per_apellido_paterno AS apo_apellido_paterno', 'pe.per_apellido_materno AS apo_apellido_materno',
 									'pe.per_email AS apo_email', 'ap.apo_fono AS apo_fono')
 						->get();
-		Excel::create($curso->name.' - Apoderado', function($excel) use($personas, $curso) {
-			$excel->sheet($curso->name, function($sheet) use($personas, $curso){
-				foreach ($personas as $key => $persona) {
-					$rut_alu = util::format_rut($persona->alu_rut, $persona->alu_dv);
-					$rut_apo = '';
-					if ($persona->apo_rut != ''){
-						$rut_apo = util::format_rut($persona->apo_rut, $persona->apo_dv);
-						$rut_apo = $rut_apo['numero'].'-'.$rut_apo['dv'];
+		if (count($personas) > 0){
+			Excel::create($curso->name.' - Apoderado', function($excel) use($personas, $curso) {
+				$excel->sheet($curso->name, function($sheet) use($personas, $curso){
+					foreach ($personas as $key => $persona) {
+						$rut_alu = util::format_rut($persona->alu_rut, $persona->alu_dv);
+						$rut_apo = '';
+						if ($persona->apo_rut != ''){
+							$rut_apo = util::format_rut($persona->apo_rut, $persona->apo_dv);
+							$rut_apo = $rut_apo['numero'].'-'.$rut_apo['dv'];
+						}
+						$data[] = array(
+								'Numero'						=> $persona->alu_numero,
+								'Rut Alumno'					=> $rut_alu['numero'].'-'.$rut_alu['dv'],
+								'Nombre Alumno' 				=> $persona->alu_nombre,
+								'Apellido Alumno' 				=> $persona->alu_apellido_paterno,
+								'Rut Apoderado'					=> $rut_apo,
+								'Nombre Apoderado' 				=> $persona->apo_nombre,
+								'Apellido Paterno Apoderado' 	=> $persona->apo_apellido_paterno,
+								'Apellido Materno Apoderado' 	=> $persona->apo_apellido_materno,
+								'E-Mail Apoderado'				=> $persona->apo_email,
+								'Fono Apoderado'				=> $persona->apo_fono
+						);
 					}
-					$data[] = array(
-							'Numero'						=> $persona->alu_numero,
-							'Rut Alumno'					=> $rut_alu['numero'].'-'.$rut_alu['dv'],
-							'Nombre Alumno' 				=> $persona->alu_nombre,
-							'Apellido Alumno' 				=> $persona->alu_apellido_paterno,
-							'Rut Apoderado'					=> $rut_apo,
-							'Nombre Apoderado' 				=> $persona->apo_nombre,
-							'Apellido Paterno Apoderado' 	=> $persona->apo_apellido_paterno,
-							'Apellido Materno Apoderado' 	=> $persona->apo_apellido_materno,
-							'E-Mail Apoderado'				=> $persona->apo_email,
-							'Fono Apoderado'				=> $persona->apo_fono
-					);
-				}
-				//descripción de curso 
-				$sheet->row(2, array(
-						'','Curso: ', $curso->name
-				));						
-				$sheet->row(3, array(
-						'','Profesor: ', $curso->profesor
-				));
-				$sheet->mergeCells('C1:D1');
-				$sheet->mergeCells('C2:D2');
-				$sheet->cells('B2:B3', function($cells) {
-					$cells->setBackground('#2fa4e7');
-					$cells->setFontColor('#ffffff');
-				});
-				
-				
-				$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
-									->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
-									->where('alumnos.cur_codigo', '=', $curso->cur_codigo)
-									->select(DB::raw('max(alumnos.alu_numero) maximo'))
-									->first();
-				$numero = $persona->maximo + 1;
-				for ($i = $numero; $i <= 50; $i++) {
-					$sheet->row($i+5, array(
-							$i
+						
+					//descripción de curso 
+					$sheet->row(2, array(
+							'','Curso: ', $curso->name
+					));						
+					$sheet->row(3, array(
+							'','Profesor: ', $curso->profesor
 					));
-				}
-				
-				//Titulo
-				$sheet->row(5, array(
-						'Alumno','', '', '', 'Apoderado' 
-				));
-				
-				$sheet->mergeCells('A5:D5');
-				$sheet->mergeCells('E5:J5');
-
-				
-				$sheet->fromArray($data, null, 'A6', false, true);
-				$sheet->setBorder('B2:D3', 'thin');
-				$sheet->setBorder('A5:J55', 'thin');
-				$sheet->cells('A5:J6', function($cells) {
-					$cells->setBackground('#2fa4e7');
-					$cells->setFontColor('#ffffff');
+					$sheet->mergeCells('C1:D1');
+					$sheet->mergeCells('C2:D2');
+					$sheet->cells('B2:B3', function($cells) {
+						$cells->setBackground('#2fa4e7');
+						$cells->setFontColor('#ffffff');
+					});
+					
+					
+					$persona = Persona::join('alumnos', 'personas.per_rut', '=', 'alumnos.per_rut')
+										->join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+										->where('alumnos.cur_codigo', '=', $curso->cur_codigo)
+										->select(DB::raw('max(alumnos.alu_numero) maximo'))
+										->first();
+					$numero = $persona->maximo + 1;
+					for ($i = $numero; $i <= 50; $i++) {
+						$sheet->row($i+5, array(
+								$i
+						));
+					}
+					
+					//Titulo
+					$sheet->row(5, array(
+							'Alumno','', '', '', 'Apoderado' 
+					));
+					
+					$sheet->mergeCells('A5:D5');
+					$sheet->mergeCells('E5:J5');
+	
+					
+					$sheet->fromArray($data, null, 'A6', false, true);
+					$sheet->setBorder('B2:D3', 'thin');
+					$sheet->setBorder('A5:J55', 'thin');
+					$sheet->cells('A5:J6', function($cells) {
+						$cells->setBackground('#2fa4e7');
+						$cells->setFontColor('#ffffff');
+					});
+					$sheet->setWidth(array(
+							'A'     =>  9,
+							'B'     =>  15,
+							'C'     =>  25,
+							'D'     =>  25,
+							'E'     =>  15,
+							'F'     =>  25,
+							'G'     =>  25,
+							'H'		=> 	25,
+							'I'		=> 	45,
+							'J'		=> 	20
+					));
+					
 				});
-				$sheet->setWidth(array(
-						'A'     =>  9,
-						'B'     =>  15,
-						'C'     =>  25,
-						'D'     =>  25,
-						'E'     =>  15,
-						'F'     =>  25,
-						'G'     =>  25,
-						'H'		=> 	25,
-						'I'		=> 	45,
-						'J'		=> 	20
-				));
-			});
-		})->download('xls');
+			})->download('xls');
+		}
+		else {
+			$errores = 'Debe cargar primero los alumnos';
+			if (Session::has('search.apoderado_curso')){
+				$search = Session::get('search.apoderado_curso');
+				$this->cur_codigo	= $search['cur_codigo'];
+				Session::put('search.apoderado_errores', array(
+						'errores'	=>	$errores));
+		
+			}
+			return redirect()->route('apoderados.index');
+		
+		}
+		
 	}
 
 	public function importar_apoderados($id)

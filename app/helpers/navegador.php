@@ -71,7 +71,7 @@ class navegador{
 		->where('roles.rol_activo', '=', 1)
 		->where('modulos_asignados.mas_activo', '=', 1)
 		->where('modulos.mod_nombre', '=', $modulo)
-		->select('modulos_asignados.mas_add', 'modulos_asignados.mas_read', 'modulos_asignados.mas_edit', 'modulos_asignados.mas_delete')
+		->select('modulos_asignados.mas_codigo', 'modulos_asignados.mas_add', 'modulos_asignados.mas_read', 'modulos_asignados.mas_edit', 'modulos_asignados.mas_delete', 'modulos_asignados.mas_especial')
 		->orderBy('apl_orden', 'ASC')
 		->orderBy('mod_orden', 'ASC')
 		->get();

@@ -16,6 +16,7 @@ use View;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use Session;
+use App\models\rol;
 
 class AdministradorController extends Controller
 {
@@ -51,13 +52,13 @@ class AdministradorController extends Controller
 			$exist = 0;
 			if (!empty($_POST)){
 				$exist = 1;
-				$this->per_rut 				= $_POST['per_rut'];
+				$this->per_rut 				= $_POST['per_rut_adm'];
 				$this->per_nombre 			= $_POST['per_nombre'];
 				$this->per_apellido_paterno = $_POST['per_apellido_paterno'];
 				$this->per_apellido_materno = $_POST['per_apellido_materno'];
 				$this->per_email 			= $_POST['per_email'];
 				Session::put('search.usuario', array(	
-						'per_rut' 				=> $this->per_rut,
+						'per_rut_adm' 			=> $this->per_rut,
 						'per_nombre' 			=> $this->per_nombre,
 						'per_apellido_paterno' 	=> $this->per_apellido_paterno,
 						'per_apellido_materno' 	=> $this->per_apellido_materno,
@@ -67,7 +68,7 @@ class AdministradorController extends Controller
 				if (Session::has('search.usuario')){
 					$exist = 1;
 					$search = Session::get('search.usuario');
-					$this->per_rut 				= $search['per_rut'];
+					$this->per_rut 				= $search['per_rut_adm'];
 					$this->per_nombre 			= $search['per_nombre'];
 					$this->per_apellido_paterno = $search['per_apellido_paterno'];
 					$this->per_apellido_materno = $search['per_apellido_materno'];
@@ -80,6 +81,7 @@ class AdministradorController extends Controller
 			if ($exist == 0){
 				$personas = Persona::join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
 				->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
+				->wherein('roles.rol_nombre', array('Administrador', 'Direccion'))
 				->orderBy('personas.per_rut', 'ASC')
 				->paginate($this->paginate);
 			}
@@ -87,6 +89,7 @@ class AdministradorController extends Controller
 				$personas = Persona::select()
 							->join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
 							->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
+							->wherein('roles.rol_nombre', array('Administrador', 'Direccion'))
 							->orderBy('personas.per_rut', 'ASC');
 				
 				if ($this->per_rut != ''){
@@ -107,7 +110,7 @@ class AdministradorController extends Controller
 				
 				$personas = $personas->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'administrador', 'pk' => 'per_rut', 'clase' => 'container col-md-12', 'col' => 7);
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'administradores', 'pk' => 'per_rut_adm', 'clase' => 'container col-md-12', 'col' => 7);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
@@ -142,19 +145,22 @@ class AdministradorController extends Controller
 		$menu = navegador::crear_menu($idusuario);
 		$privilegios = navegador::privilegios($idusuario, $this->Privilegio_modulo);
 		$privilegio = $privilegios[0];
+		$validate = AdministradorController::validador();
 		if ($privilegio->mas_add == 0){
 			return redirect()->route('logout');
 		}
 		else{
-			$this->apl_nombre = 	aplicacion::where('apl_activo', '=', '1')
-									->orderBy('apl_orden', 'ASC')
-									->lists('apl_nombre', 'apl_codigo');
-			$this->apl_nombre = util::array_indice($this->apl_nombre, -1);
-			$tabla = ModuloController::arreglo();
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'modulos', 'pk' => 'mod_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
+			$this->rol_nombre = 	rol::where('rol_activo', '=', '1')
+									->wherein('roles.rol_nombre', array('Administrador', 'Direccion'))
+									->orderBy('rol_orden', 'ASC')
+									->lists('rol_nombre', 'rol_codigo');
+			$this->rol_nombre = util::array_indice($this->rol_nombre, -1);
+			$tabla = AdministradorController::arreglo();
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'modulos', 'pk' => 'rol_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
 			return view('mantenedor.add')
 			->with('menu', $menu)
-			->with('title', 'Ingresar Modulos')
+			->with('validate', $validate)
+			->with('title', 'Ingresar Usuarios')
 			->with('tablas', $tabla)
 			->with('entidad', $entidad);
 		}
@@ -236,7 +242,7 @@ class AdministradorController extends Controller
 	}
 	public function arreglo(){
 		$tabla[] = array(	'nombre' 		=> 'Run',
-							'campo'			=> 'per_rut',
+							'campo'			=> 'per_rut_adm',
 							'clase' 		=> 'container col-md-5',
 							'validate'		=> '',
 							'descripcion'	=> 'Run',
@@ -297,7 +303,7 @@ class AdministradorController extends Controller
 							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Re-Password',
 							'campo'			=> 'per_password_re',
-							'clase' 		=> 'container col-md-1',
+							'clase' 		=> 'container col-md-3',
 							'validate'		=> '',
 							'descripcion'	=> 'Re-password',
 							'value'			=> '',
@@ -324,8 +330,7 @@ class AdministradorController extends Controller
 				$().ready(function () {
 					$('#myform').validate({
 						rules: {
-				
-							'per_rut'				:	{required: true, minlength: 5, maxlength: 50},
+							'per_rut_adm'				:	{required: true, minlength: 5, maxlength: 50},
 							'per_nombre'			:	{required: true, minlength: 2, maxlength: 50},
 							'per_apellido_paterno'	:	{required: true, minlength: 2, maxlength: 50},
 							'per_apellido_materno'	:	{required: true, minlength: 2, maxlength: 50},
@@ -335,7 +340,69 @@ class AdministradorController extends Controller
 							'rol_nombre'			:	{required: true, min:1}
 							}
 					});
-		
+				$('#per_rut_adm').change(function(event){
+					$.get('../alumno_administrador/'+event.target.value+'', function(response,state){
+						console.log(response[0]);
+						if (response.length > 0){
+							console.log('ll');
+							if (response[0].apoderado != null){
+								BootstrapDialog.alert({
+									title: 'Error',
+									message: 'El Rut esta ingresado como Apoderado',
+									type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+									closable: true, // <-- Default value is false
+									draggable: true, // <-- Default value is false
+									buttonLabel: 'Volver', // <-- Default value is 'OK',
+								});
+								$('#per_rut_adm').val('');			
+								$('#per_nombre').val('');			
+								$('#per_nombre_segundo').val('');			
+								$('#per_apellido_paterno').val('');			
+								$('#per_apellido_materno').val('');			
+								$('#per_email').val('');
+								$('#per_rut_alu').focus();			
+							}	
+							if (response[0].alumno != null){
+								BootstrapDialog.alert({
+									title: 'Error',
+									message: 'Alumno esta matriculado en el curso '+response[0].curso,
+									type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+									closable: true, // <-- Default value is false
+									draggable: true, // <-- Default value is false
+									buttonLabel: 'Volver', // <-- Default value is 'OK',
+								});
+								$('#per_rut_adm').val('');			
+								$('#per_nombre').val('');			
+								$('#per_nombre_segundo').val('');			
+								$('#per_apellido_paterno').val('');			
+								$('#per_apellido_materno').val('');			
+								$('#per_email').val('');
+								$('#per_rut_alu').focus();			
+							}
+						}
+						else{
+							$('#per_nombre').focus();
+						}
+					});
+				});
+				$('#per_rut_adm').Rut({
+					  on_error: function(){ 
+						  BootstrapDialog.alert({
+					            title: 'Error',
+					            message: 'El RUN ingresado es incorrecto!!',
+					            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+					            closable: true, // <-- Default value is false
+					            draggable: true, // <-- Default value is false
+					            buttonLabel: 'Volver', // <-- Default value is 'OK',
+					            //callback: function(result) {
+					                // result will be true if button was click, while it will be false if users close the dialog directly.
+					                //alert('Result is: ' + result);
+					            //}
+					        });
+							console.log('prueba');
+						}
+					});
+				
 				});";
 		return $validate;
 	}
