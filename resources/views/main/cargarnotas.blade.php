@@ -48,10 +48,12 @@ else {
 			
 			var cur_codigo = $("#hid_cur_codigo").val();
 			$("#CantNotas").change(function() {
-				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+				$('#export_all').attr('href', url+'cargarnotas/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+				console.log('error');
 			});
 			$("#pri_nombre_2").change(function() {
-				$('#export_asignatura').attr('href', url+'/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+				$('#export_all').attr('href', url+'cargarnotas/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+				console.log('error');
 			});
 			if (cur_codigo == -1){
 			    $("#add").attr('disabled', true);
@@ -224,88 +226,46 @@ else {
 
 
 
-	<div class="modal fade" id="myModalLibroExport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel">Exportar libro de clase a Excel</h4>
-				</div>
-				<div class="modal-body">
-					<div class="row">
-						<div class="col-sm-4">
-							<label for="curso" class="control-label">Cantidad de notas:</label>
-						</div>
-						<div class="col-sm-2">
-							<input class="form-control" id="CantNotas" name="CantNotas" placeholder="Cantidad Notas" type="text" value="{{ $CantidadNotas }}">
-						</div>
-						<div class="col-sm-6">
-							&nbsp;
-						</div>
+<div class="modal fade" id="myModalLibroExport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Exportar libro de clase a Excel</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-sm-4">
+						<label for="curso" class="control-label">Cantidad de notas:</label>
 					</div>
-					<div class="row">
-						<div class="col-sm-4">
-							<label for="curso" class="control-label">Periodos:</label>
-						</div>
-						<div class="col-sm-4">
-							{{ Form::select('pri_nombre_2', $periodo2, 0, ['id' => 'pri_nombre_2', 'class' => 'form-control', 'name' => 'pri_nombre_2' ]) }}								
-						</div>
-						<div class="col-sm-4">
-							&nbsp;
-						</div>
+					<div class="col-sm-2">
+						<input class="form-control" id="CantNotas" name="CantNotas" placeholder="Cantidad Notas" type="text" value="{{ $CantidadNotas }}">
 					</div>
-					
+					<div class="col-sm-6">
+						&nbsp;
+					</div>
 				</div>
-				<div class="modal-footer">
-					<input type="hidden" value="1" id="codigo">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>
-					<a class="btn btn-primary" id="export_all">Exportar</a>
-	<!-- 				<button type="button" class="btn btn-primary" id="export">Exportar</button> -->
+				<div class="row">
+					<div class="col-sm-4">
+						<label for="curso" class="control-label">Periodos:</label>
+					</div>
+					<div class="col-sm-4">
+						{{ Form::select('pri_nombre_2', $periodo2, 0, ['id' => 'pri_nombre_2', 'class' => 'form-control', 'name' => 'pri_nombre_2' ]) }}								
+					</div>
+					<div class="col-sm-4">
+						&nbsp;
+					</div>
 				</div>
+				
+			</div>
+			<div class="modal-footer">
+				<input type="hidden" value="1" id="codigo">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>
+				<a class="btn btn-primary" id="export_all">Exportar</a>
+<!-- 				<button type="button" class="btn btn-primary" id="export">Exportar</button> -->
 			</div>
 		</div>
 	</div>
-
-	<div class="modal fade" id="myModalAsignaturaExport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel">Exportar Asignatura en Excel</h4>
-				</div>
-				<div class="modal-body">
-					<div class="row">
-						<div class="col-sm-4">
-							<label for="curso" class="control-label">Cantidad de notas:</label>
-						</div>
-						<div class="col-sm-2">
-							<input class="form-control" id="CantNotas" name="CantNotas" placeholder="Cantidad Notas" type="text" value="{{ $CantidadNotas }}">
-						</div>
-						<div class="col-sm-6">
-							&nbsp;
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-sm-4">
-							<label for="curso" class="control-label">Periodos:</label>
-						</div>
-						<div class="col-sm-4">
-							{{ Form::select('pri_nombre_3', $periodo2, 0, ['id' => 'pri_nombre_3', 'class' => 'form-control', 'name' => 'pri_nombre_3' ]) }}								
-						</div>
-						<div class="col-sm-4">
-							&nbsp;
-						</div>
-					</div>
-					
-				</div>
-				<div class="modal-footer">
-					<input type="hidden" value="1" id="codigo">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>
-					<a class="btn btn-primary" id="export_asignatura">Exportar</a>
-	<!-- 				<button type="button" class="btn btn-primary" id="export">Exportar</button> -->
-				</div>
-			</div>
-		</div>
-	</div>
+</div>
 
 @endsection
