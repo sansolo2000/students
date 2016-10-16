@@ -106,7 +106,7 @@ else {
 				$('#myModalLibroExport').focus()
 			})
 			
-			
+			{!! $script !!}
 		});
 
 
@@ -267,5 +267,7 @@ else {
 		</div>
 	</div>
 </div>
+
+{!! $modal !!}
 
 @endsection

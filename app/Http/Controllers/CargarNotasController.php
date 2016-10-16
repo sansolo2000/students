@@ -105,7 +105,95 @@ class CargarNotasController extends Controller
 					<div class="form-group col-sm-12">
 					<ul class="nav nav-tabs">';
 			$ubicacion = 1;
-			foreach ($asignaturas as $asignatura){
+ 			$script = '';
+ 			$modal = '';
+			$periodos = periodo::orderBy('periodos.pri_orden', 'ASC')->get();
+ 			foreach ($asignaturas as $asignatura){
+			 	$notas = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
+						->where('asignaturas.cur_codigo', '=', $this->cur_codigo)
+						->where('asignaturas.asg_codigo', '=', $asignatura->asg_codigo)
+						->groupby('asignaturas.asg_nombre')
+						->select(DB::raw('calificaciones.asg_codigo, asignaturas.asg_nombre, count(*) as cantidad'))
+						->orderBy(DB::raw('cantidad'), 'ASC')
+						->first();
+			 	$cantidad = $notas['cantidad'];
+ 				if($cantidad < 10){
+					$cantidad = 10;
+				}
+			 	$script .= "var curso".$asignatura->asg_codigo." = ".$this->cur_codigo.";\n";
+				$script .= "var asignatura".$asignatura->asg_codigo." = ".$asignatura->asg_codigo.";\n";
+				$script .= "var periodo".$asignatura->asg_codigo." = ".$this->pri_codigo.";\n";
+				$script .= "var notas".$asignatura->asg_codigo." = 10;\n";
+				$script .= "var url = '/".util::obtener_url()."cargarnotas/';\n";
+				$script .= "$('#export_".$asignatura->asg_codigo."').attr('href', url + 'downloadscore/' + curso".$asignatura->asg_codigo." + '/' + asignatura".$asignatura->asg_codigo." + '/' + $('#pri_nombre_asignatura_".$asignatura->asg_codigo."').val() + '/' + $('#CantNotas_".$asignatura->asg_codigo."').val());\n";
+				$script .= "$('#CantNotas_".$asignatura->asg_codigo."').change(function() {\n";
+				$script .= "	$('#export_".$asignatura->asg_codigo."').attr('href', url  + 'downloadscore/' + curso".$asignatura->asg_codigo." + '/' + asignatura".$asignatura->asg_codigo." + '/' + $('#pri_nombre_asignatura_".$asignatura->asg_codigo."').val() + '/' + $('#CantNotas_".$asignatura->asg_codigo."').val());\n";
+				$script .= "});\n";
+				$script .= "$('#pri_nombre_asignatura_".$asignatura->asg_codigo."').change(function() {\n";
+				$script .= "	$('#export_".$asignatura->asg_codigo."').attr('href', url + 'downloadscore/' + curso".$asignatura->asg_codigo." + '/' + asignatura".$asignatura->asg_codigo." + '/' + $('#pri_nombre_asignatura_".$asignatura->asg_codigo."').val() + '/' + $('#CantNotas_".$asignatura->asg_codigo."').val());\n";
+				$script .= "});\n";
+				$script .= "$('#download_".$asignatura->asg_codigo."').click(function( event".$asignatura->asg_codigo." ) {\n";
+				$script .= "	console.log(1000);\n";
+				$script .= "	event".$asignatura->asg_codigo.".preventDefault();\n";
+				$script .= "	event".$asignatura->asg_codigo.".stopPropagation();\n";
+				$script .= "	$('#myModalExport_".$asignatura->asg_codigo."').modal('show')\n";
+				$script .= "});\n";
+				$script .= "$('#export_".$asignatura->asg_codigo."').click(function( event".$asignatura->asg_codigo." ) {\n";
+				$script .= "	$('#myModalExport_".$asignatura->asg_codigo."').modal('toggle');\n";
+				$script .= "});\n";
+				$script .= "$('#myModalExport_".$asignatura->asg_codigo."').on('shown.bs.modal', function (event".$asignatura->asg_codigo.") {\n";
+				$script .= "	event".$asignatura->asg_codigo.".preventDefault();\n";
+				$script .= "	event".$asignatura->asg_codigo.".stopPropagation();\n";
+				$script .= "	$('#myModalExport_".$asignatura->asg_codigo."').focus()\n";
+				$script .= "})\n";
+				
+				
+				
+				$modal .= '	<div class="modal fade" id="myModalExport_'.$asignatura->asg_codigo.'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">';
+				$modal .= '		<div class="modal-dialog" role="document">';
+				$modal .= '			<div class="modal-content">';
+				$modal .= '				<div class="modal-header">';
+				$modal .= '					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+				$modal .= '					<h4 class="modal-title" id="myModalLabel_'.$asignatura->asg_codigo.'">Exportar asignatura '.$asignatura->asg_nombre.'</h4>';
+				$modal .= '				</div>';
+				$modal .= '				<div class="modal-body">';
+				$modal .= '					<div class="row">';
+				$modal .= '						<div class="col-sm-4">';
+				$modal .= '							<label for="curso" class="control-label">Cantidad de notas:</label>';
+				$modal .= '						</div>';
+				$modal .= '						<div class="col-sm-2">';
+				$modal .= '							<input class="form-control" id="CantNotas_'.$asignatura->asg_codigo.'" name="CantNotas_'.$asignatura->asg_codigo.'" placeholder="Cantidad Notas" type="text" value="'.$cantidad.'">';
+				$modal .= '						</div>';
+				$modal .= '						<div class="col-sm-6">';
+				$modal .= '							&nbsp;';
+				$modal .= '						</div>';
+				$modal .= '					</div>';
+				$modal .= '					<div class="row">';
+				$modal .= '						<div class="col-sm-4">';
+				$modal .= '							<label for="curso" class="control-label">Periodos:</label>';
+				$modal .= '						</div>';
+				$modal .= '						<div class="col-sm-4">';
+				$modal .= '							<select class="form-control" name="pri_nombre_asignatura_'.$asignatura->asg_codigo.'" id="pri_nombre_asignatura_'.$asignatura->asg_codigo.'">';
+				$modal .= '								<option selected value="0">Todos</option>';
+				foreach ($periodos as $periodo){
+					$modal .= '							<option value="'.$periodo['pri_codigo'].'">'.$periodo['pri_nombre'].'</option>';
+				}
+				$modal .= '							</select>';
+				$modal .= '						</div>';
+				$modal .= '						<div class="col-sm-4">';
+				$modal .= '							&nbsp;';
+				$modal .= '						</div>';
+				$modal .= '					</div>';
+				$modal .= '				</div>';
+				$modal .= '				<div class="modal-footer">';
+				$modal .= '					<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>';
+				$modal .= '					<a class="btn btn-primary" id="export_'.$asignatura->asg_codigo.'">Exportar</a>';
+				$modal .= '				</div>';
+				$modal .= '			</div>';
+				$modal .= '		</div>';
+				$modal .= '	</div>';
+//				util::print_a($modal, 0);
+				
 				if ($ubicacion == 1){
 					$cabecera .= '<li class="active">';
 					$ubicacion = 0;
@@ -122,18 +210,10 @@ class CargarNotasController extends Controller
  			$cuerpo	= '<div id="myTabContent" class="tab-content">';
  			$asignatura_seleccionada = '';
  			$ubicacion = 1;
- 			
+
+			$periodos = periodo::orderBy('periodos.pri_orden', 'ASC')->get();
  			foreach ($alumnos as $alumno){
  				if ($alumno->asg_nombre != $asignatura_seleccionada){
- 				 	$notas = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
-						->where('asignaturas.cur_codigo', '=', $this->cur_codigo)
-						->where('asignaturas.asg_codigo', '=', $alumno->asg_codigo)
-						->groupby('asignaturas.asg_nombre')
-						->select(DB::raw('calificaciones.asg_codigo, asignaturas.asg_nombre, count(*) as cantidad'))
-						->orderBy(DB::raw('cantidad'), 'ASC')
-						->first();
-// 				 	util::print_a($notas['cantidad'], 0);
- 				 	$cantidad = $notas['cantidad'];
 					if($cantidad < 10){
 						$cantidad = 10;
 					}
@@ -162,7 +242,7 @@ class CargarNotasController extends Controller
 						</div>
 						<div class="container col-md-12">
  							<div class="container col-md-3 center_pers">
-								<a href="'.$alumno->asg_codigo.'" class="btn btn-primary '.$clase.'">Bajar Notas</a>
+								<a href="'.$alumno->asg_codigo.'" class="btn btn-primary '.$clase.'" id="download_'.$alumno->asg_codigo.'">Bajar Notas</a>
 					  		</div>
  							<div class="container col-md-6 center_pers">
 								<div class="panel panel-primary">
@@ -228,8 +308,6 @@ class CargarNotasController extends Controller
 				$cuerpo	.= '				<td>'.number_format($suma, 1, ',', ' ').'</th>
  										</tr>';
  						
- 				
- 				
  			}
  			$cuerpo	.= '</tbody>
  						</table>
@@ -257,6 +335,8 @@ class CargarNotasController extends Controller
 					->with('record', $asignaturas)
 					->with('cabecera', $cabecera)
 					->with('entidad', $entidad)
+					->with('script', $script)
+					->with('modal', $modal)
 					->with('CantidadNotas', $cantidad)
 					->with('privilegio', $privilegio);
 		}
@@ -266,36 +346,41 @@ class CargarNotasController extends Controller
 		return redirect()->route('main.cargarnotas');
 	}
 	
-	public function exportar_calificaciones($curso, $asignatura=0, $periodoMostrar=0, $notas)
+	public function exportar_calificaciones($curso, $asignaturaMostrar, $periodoMostrar, $notas)
 	{
 		$profesor = curso::select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, " ", niveles.niv_nombre) as name'),
-								DB::raw('CONCAT("Profesor Jefe: ", pr.per_nombre, " ", pr.per_apellido_paterno) as profesor'))
+								DB::raw('CONCAT(pr.per_nombre, " ", pr.per_apellido_paterno) as profesor'))
 							->join('niveles', 'cursos.niv_codigo', '=', 'niveles.niv_codigo')
 							->join('profesores as pj', 'cursos.pro_codigo', '=', DB::raw('pj.pro_codigo'))
 							->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
 							->where('cursos.cur_codigo', '=', $curso)
 							->first();
-		$asignaturas = curso::select('asignaturas.asg_codigo', 'asignaturas.asg_nombre')
+		$asignaturas = curso::select('asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('CONCAT(personas.per_nombre, " ", personas.per_apellido_paterno) as profesor'))
 							->join('asignaturas', 'cursos.cur_codigo', '=', 'asignaturas.cur_codigo')
+							->join('profesores', 'asignaturas.pro_codigo', '=', 'asignaturas.pro_codigo')
+							->join('personas', 'profesores.per_rut', '=', 'personas.per_rut')
 							->orderBy('asignaturas.asg_orden', 'ASC')
 							->where('asignaturas.cur_codigo', '=', $curso);
-		if ($asignatura != 0){
-			$asignaturas = $asignaturas->where('asignaturas.cur_codigo', '=', $asignatura);
-			$asignaturas = $asignaturas->first();
+		if ($asignaturaMostrar != 0){
+			$asignaturas = $asignaturas->where('asignaturas.asg_codigo', '=', $asignaturaMostrar);
+			$asignaturas = $asignaturas->get();
 		}
 		else{
 			$asignaturas = $asignaturas->get();
 		}
 		
 		//$nombre = $curso->name;
+//		util::print_a($asignaturas, 0);
 		$alumnos = alumno::where('alumnos.cur_codigo', '=', $curso)->get();
 		$CantidadAlumnos = $alumnos->count(); 
 		if ($CantidadAlumnos> 0){
-			if ($asignatura == 0){
+			if ($asignaturaMostrar == 0){
 				$libros = $profesor->name.' - Libro de clases';
 			}
 			else{
-				$libros = $profesor->name.' - Asignatura'.$asignaturas->asg_nombre;
+				foreach ($asignaturas as $asignaturalistar){
+					$libros = $profesor->name.' - Asignatura '.$asignaturalistar->asg_nombre;
+				}
 			}
 			//util::print_a($alumnos, 0);
 			$alfabeto = util::alfabeto(0);						
@@ -367,16 +452,26 @@ class CargarNotasController extends Controller
 							$data[$ind][$columnas_excel[$pos]['name']] = $celda;
 							$ind++;
 						}
+						
 						$sheet->row(2, array(
-								'','Curso: ', $profesor->name
+								'','Curso:', $profesor->name, '', '', 'Asignatura:', '', '', '', $asignaturalistar['asg_nombre']
 						));
 						$sheet->row(3, array(
-								'','Profesor: ', $profesor->profesor
+								'','Profesor Jefe:', $profesor->profesor, '', '', 'Profesor de la Asignatura:', '', '', '', $asignaturalistar['profesor']
 						));
 						$sheet->fromArray($data, null, 'A5', false, true);
 						$sheet->setBorder('B2:D3', 'thin');
 						$sheet->mergeCells('C2:D2');
 						$sheet->mergeCells('C3:D3');
+						$sheet->setBorder('F2:N3', 'thin');
+						$sheet->mergeCells('F2:I2');
+						$sheet->mergeCells('F3:I3');
+						$sheet->mergeCells('J2:N2');
+						$sheet->mergeCells('J3:N3');
+						$sheet->cells('F2:I3', function($cells) {
+							$cells->setBackground('#2fa4e7');
+							$cells->setFontColor('#ffffff');
+						});
 						$celda = $CantidadAlumnos+5;
 						$letter1 = $columnas_excel[0]['letter'];
 						$letter2 = $columnas_excel[count($columnas_excel)-1]['letter'];

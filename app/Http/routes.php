@@ -60,8 +60,6 @@ use App\models\roles;
 		Route::post('cursos/search', ['as' => 'cursos/search', 'uses' => 'CursoController@index']);
 		Route::post('alumnos/search', ['as' => 'alumnos/search', 'uses' => 'AlumnoController@index']);
 		Route::post('asignaturas/search_curso', ['as' => 'asignaturas/search_curso', 'uses' => 'AsignaturaController@index']);
-//		Route::post('cargarnotas/downloadscore', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
-		Route::post('cargarnotas/downloadscore/{curso}/{asignatura}/{periodos}/{notas}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
 		Route::get('cargarnotas/downloadscore/{curso}/{asignatura}/{periodos}/{notas}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
 		Route::post('cargarnotas/search_curso', ['as' => 'cargarnotas/search_curso', 'uses' => 'CargarNotasController@index']);
 		Route::post('alumnos/search_curso', ['as' => 'alumnos/search_curso', 'uses' => 'AlumnoController@index']);
