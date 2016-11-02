@@ -4,6 +4,7 @@ namespace App\helpers;
 use DB;
 use Session;
 use App\helpers\util;
+use App\models\persona;
 
 
 class navegador{
@@ -22,6 +23,10 @@ class navegador{
 		->orderBy('apl_orden', 'ASC')
 		->orderBy('mod_orden', 'ASC')
 		->get();
+		$persona = persona::join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+						->join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')
+						->where('personas.per_rut', '=', $rut)
+						->first();
 		$menu = '<ul class="nav navbar-nav">';
 		$aplicacion = '';
 		foreach ($opciones as $opcion){
@@ -46,6 +51,25 @@ class navegador{
 		}
 		$menu .= '</ul>';
 		$menu .= '</li>';
+		$menu .= '</ul>';
+		$menu .= '<ul class="nav navbar-nav navbar-right">';
+		$menu .= '<li class="dropdown">';
+		$menu .= '<a href="#" class="dropdown-toggle icon-user" data-toggle="dropdown" role="button" aria-expanded="false">Usuario<span class="caret"></span></a>';
+		$menu .= '<ul class="dropdown-menu" role="menu">';
+		$menu .= '<li style="padding-left:10px;">';
+		$menu .= 'Usuario:';
+		$menu .= '</li>';
+		$menu .= '<li style="padding-left:20px;">';
+		$menu .= $persona->per_nombre.' '.$persona->per_apellido_paterno;
+		$menu .= '</li>';
+		$menu .= '<li class="divider"></li>';
+		$menu .= '<li style="padding-left:10px;">';
+		$menu .= 'Perfil:';
+		$menu .= '</li>';
+		$menu .= '<li style="padding-left:20px;">';
+		$menu .= $persona->rol_nombre;
+		$menu .= '</li>';
+		$menu .= '<li class="divider"></li>';
 		$menu .= '<li>';
 		$value = Session::get('origen');
         if ($value == 1){
@@ -56,7 +80,8 @@ class navegador{
     	}		
 		$menu .= '</li>';
 		$menu .= '</ul>';
-		
+		$menu .= '</li>';
+		$menu .= '</ul>';		
 		return $menu;	
 	}
 	public static function privilegios( $rut, $modulo){
@@ -71,7 +96,9 @@ class navegador{
 		->where('roles.rol_activo', '=', 1)
 		->where('modulos_asignados.mas_activo', '=', 1)
 		->where('modulos.mod_nombre', '=', $modulo)
-		->select('modulos_asignados.mas_codigo', 'modulos_asignados.mas_add', 'modulos_asignados.mas_read', 'modulos_asignados.mas_edit', 'modulos_asignados.mas_delete', 'modulos_asignados.mas_especial')
+		->select('modulos_asignados.mas_codigo', 'modulos_asignados.mas_add', 'modulos_asignados.mas_read', 
+				'modulos_asignados.mas_edit', 'modulos_asignados.mas_delete', 'modulos_asignados.mas_especial',
+				'roles.rol_nombre', 'asignaciones.per_rut')
 		->orderBy('apl_orden', 'ASC')
 		->orderBy('mod_orden', 'ASC')
 		->get();

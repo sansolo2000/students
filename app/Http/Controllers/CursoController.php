@@ -17,6 +17,8 @@ use App\Http\Requests;
 use DB;
 use Session;
 use App\models\anyo;
+use App\models\asignatura;
+use App\models\rol;
 
 class CursoController extends Controller
 {
@@ -319,6 +321,51 @@ class CursoController extends Controller
 		}
 	}
 
+	public function getCursoDisponibleProfesor(Request $request, $per_rut){
+		
+		$usuario = rol::join('asignaciones', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
+					->join('personas', 'asignaciones.per_rut', '=', 'personas.per_rut')
+					->where('personas.per_rut', '=', $per_rut)
+					->where('roles.rol_nombre', '=', 'Profesor');
+		
+		$curso = Curso::join('profesores', 'cursos.pro_codigo', '=', 'profesores.pro_codigo')
+		->select('cursos.cur_codigo')
+		->where('cursos.cur_activo', '=', 1)
+		->where('profesores.per_rut', '=', $per_rut);
+
+		$asignatura = asignatura::join('cursos', 'asignaturas.cur_codigo', '=', 'cursos.cur_codigo')
+		->join('profesores', 'asignaturas.pro_codigo', '=', 'profesores.pro_codigo')
+		->select('cursos.cur_codigo')
+		->where('cursos.cur_activo', '=', 1)
+		->where('profesores.per_rut', '=', $per_rut);
+		
+		$curso_asignatura = $curso->union($asignatura)->Get()->toArray();
+		
+		$datos = Curso::join('niveles', 'cursos.niv_codigo', '=', 'niveles.niv_codigo')
+		->join('profesores', 'cursos.pro_codigo', '=', 'profesores.pro_codigo')
+		->select('cursos.cur_codigo as id', DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre) as name'));
+		if ($usuario->count()>0){
+			$datos = $datos->wherein('cursos.cur_codigo', $curso_asignatura);
+		}
+		else{
+			$datos = $datos->where('cursos.cur_activo', '=', 1);
+		}
+		$datos = $datos->get();
+		
+		$records[] = array('id' => -1, 'name' => ':: Seleccionar ::');
+		foreach ($datos as $dato)
+		{
+			$records[] = array('id' => $dato['id'], 'name' => $dato['name']);
+		}
+		if ($request->ajax()){
+			return response()->json($records);
+		}
+		else{
+			util::print_a($records,0);
+		}
+	}
+	
+	
 	public function arreglo(){
 		$tabla[] = array(	'nombre' 		=> 'Numero',
 							'campo'			=> 'cur_numero',

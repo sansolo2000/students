@@ -3,6 +3,7 @@ use App\models\colegio;
 use App\models\modulo_asignado;
 use App\helpers\util;
 use App\models\permiso_especial;
+use App\models\curso;
 
 $colegios = Colegio::select()
 			->join('comunas', 'colegios.com_codigo', '=', 'comunas.com_codigo')
@@ -43,27 +44,22 @@ else {
 	
 
 		$(document).ready(function() {
-			var url = '{{ $entidad['controller'] }}';
-			$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+			var userid = {{ $user }};
+			var curcodigo = {{ $cur_codigo }};
+			if (url == null){
+				var url = '{{ $entidad['controller'] }}';
+			}
+			$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+			$('#import_all').attr('href', url+'/uploadscore/{{ $cur_codigo }}/'+$("#pri_nombre_3").val());
 			
 			var cur_codigo = $("#hid_cur_codigo").val();
 			$("#CantNotas").change(function() {
-				$('#export_all').attr('href', url+'cargarnotas/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
-				console.log('error');
+				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
 			});
 			$("#pri_nombre_2").change(function() {
-				$('#export_all').attr('href', url+'cargarnotas/downloadscore/{{ $cur_codigo }}/0/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
-				console.log('error');
+				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
 			});
-			if (cur_codigo == -1){
-			    $("#add").attr('disabled', true);
-			}
-			else {
-				url = $("#add").attr("href")+'/'+cur_codigo;
-				$("#add").attr('href', url);
-				console.log(url);				
-			}
-			$.get("/students/public/cursos_disponibles", function(response,state){
+			$.get("/students/public/cursos_disponibles_profesores/"+userid, function(response,state){
 				if (response.length == 0){
 					BootstrapDialog.alert({
 						title: 'Error',
@@ -89,11 +85,9 @@ else {
 				}
 			});
 
-			console.log('1');
 			$( "#download" ).click(function( event ) {
 				event.preventDefault();
 				event.stopPropagation();
-				console.log('2');
 				$('#myModalLibroExport').modal('show')
 				
 			});
@@ -105,6 +99,46 @@ else {
 				evt.stopPropagation();			
 				$('#myModalLibroExport').focus()
 			})
+
+			
+			$( "#upload" ).click(function( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+				$('#myModalLibroImport').modal('show')
+				
+			});
+ 			$( "#import_all" ).click(function( event ) {
+ 				$('#myModalLibroImport').modal('toggle');
+			});
+ 			$('#myModalLibroImport').on('shown.bs.modal', function (evt) {
+				evt.preventDefault();
+				evt.stopPropagation();			
+				$('#myModalLibroImport').focus()
+			})
+			console.log(1);
+			@if (isset($errores))
+				var errores = '{!! $errores !!}';
+				console.log(errores);
+			@else 
+				var errores = '';
+			@endif
+			console.log('Errores: '+errores);
+			console.log(2);
+			if (errores !== ''){
+				BootstrapDialog.alert({
+			            title: 'Error',
+			            message: errores,
+			            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+			            closable: true, // <-- Default value is false
+			            draggable: true, // <-- Default value is false
+			            buttonLabel: 'Volver', // <-- Default value is 'OK',
+			            //callback: function(result) {
+			                // result will be true if button was click, while it will be false if users close the dialog directly.
+			                //alert('Result is: ' + result);
+			            //}
+			        });
+				console.log(3);
+			}
 			
 			{!! $script !!}
 		});
@@ -134,16 +168,14 @@ else {
 				<div class="container col-md-12">
 					<div class="container col-md-3 center_pers">
 						<?php 
-							if ($privilegio->mas_especial == 1){
-								$especiales = permiso_especial::where('mas_codigo', '=', $privilegio->mas_codigo)->where('pee_nombre', '=', 'Descargar Curso');
-							}
-							if ($cur_codigo != -1 && $especiales->count() == 1){
+							if ($cur_codigo != -1){
 								$clase = '';
 							}
 							else{
 								$clase = "disabled";
 							}
 						?>
+						
 						<a href="downloadscore/{{ $cur_codigo }}" class="btn btn-primary <?php echo $clase; ?>" id="download">Bajar Notas</a>
 			  		</div>
 					<div class="container col-md-6">
@@ -196,17 +228,14 @@ else {
 					</div>
 					<div class="container col-md-3 center_pers">
 						<?php 
-							if ($privilegio->mas_especial == 1){
-								$especiales = permiso_especial::where('mas_codigo', '=', $privilegio->mas_codigo)->where('pee_nombre', '=', 'Cargar Curso');
-							}
-							if ($cur_codigo != -1 && $especiales->count() == 1){
+							if ($cur_codigo != -1){
 								$clase = '';
 							}
 							else{
 								$clase = "disabled";
 							}
 						?>
-						<a href="uploadscore/{{ $cur_codigo }}" class="btn btn-primary <?php echo $clase; ?>">Subir Notas</a>
+						<a href="uploadscore/{{ $cur_codigo }}" class="btn btn-primary <?php echo $clase; ?>"  id="upload">Subir Notas</a>
 			  		</div>
 		  		</div>
 				<div class="container col-md-12">
@@ -264,6 +293,34 @@ else {
 				<a class="btn btn-primary" id="export_all">Exportar</a>
 <!-- 				<button type="button" class="btn btn-primary" id="export">Exportar</button> -->
 			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="myModalLibroImport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			{{ Form::model('Curso', array('route' => array('cargarnotas/uploadscore'), 'method' => 'POST', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Importar libro de clase a Excel</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-sm-4">
+							<label for="curso" class="control-label">Archivo:</label>
+						</div>
+						<div class="col-sm-8">
+							{{ Form::file('import_file', ['class' => 'form-control']) }}
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>
+					<input type="hidden" value="{{$cur_codigo}}" id="curso" name="curso">
+				    {{ Form::button('Importar Notas', array('class'=>'btn btn-primary', 'type'=>'submit')) }}    
+				</div>
+			{{ Form::close() }}
 		</div>
 	</div>
 </div>

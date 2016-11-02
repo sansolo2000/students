@@ -13,8 +13,12 @@ use App\models\roles;
 | and give it the controller to call when that URI is requested.
 |
 */
-
-
+/* \Event::listen('Illuminate\Database\Events\QueryExecuted', function ($query) {
+	util::print_a($query->sql, 1);
+	util::print_a($query->bindings, 1);
+	util::print_a($query->time, 1);
+});
+ */
 	Route::group(['middleware' =>[ 'web']], function () {
 		Route::get('/', ['as' => '/', 'uses' => 'IndexController@Root']);
 		Route::get('login', ['as' => 'login', 'uses' => 'IndexController@Error_login']);
@@ -44,6 +48,8 @@ use App\models\roles;
 		Route::resource('cargarnotas', 'CargarNotasController');
 		Route::resource('asignaturas', 'AsignaturaController');
 		Route::resource('periodos', 'PeriodoController');
+		Route::resource('vernotas', 'VerNotasController');
+		
 		Route::get('perfiles/modulo/{apl_codigo}/{rol_codigo}', ['as' => 'perfiles/modulo', 'uses' => 'Modulo_AsignadoController@getModulo']);
 		Route::get('perfiles/{id}/modulo/{apl_codigo}/{rol_codigo}', ['as' => 'perfiles/modulo', 'uses' => 'Modulo_AsignadoController@getModulo']);
 		Route::post('periodos/search', ['as' => 'periodos/search', 'uses' => 'PeriodoController@index']);
@@ -60,7 +66,13 @@ use App\models\roles;
 		Route::post('cursos/search', ['as' => 'cursos/search', 'uses' => 'CursoController@index']);
 		Route::post('alumnos/search', ['as' => 'alumnos/search', 'uses' => 'AlumnoController@index']);
 		Route::post('asignaturas/search_curso', ['as' => 'asignaturas/search_curso', 'uses' => 'AsignaturaController@index']);
-		Route::get('cargarnotas/downloadscore/{curso}/{asignatura}/{periodos}/{notas}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
+		Route::post('vernotas/search_curso', ['as' => 'vernotas/search_curso', 'uses' => 'VerNotasController@index']);
+		
+		
+		Route::get('cargarnotas/downloadscore/{curso}/{periodos}/{notas}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
+		Route::post('cargarnotas/uploadscore', ['as' => 'cargarnotas/uploadscore', 'uses' => 'CargarNotasController@importar_calificaciones']);
+		
+		
 		Route::post('cargarnotas/search_curso', ['as' => 'cargarnotas/search_curso', 'uses' => 'CargarNotasController@index']);
 		Route::post('alumnos/search_curso', ['as' => 'alumnos/search_curso', 'uses' => 'AlumnoController@index']);
 		Route::post('apoderados/search_curso', ['as' => 'apoderados/search_curso', 'uses' => 'ApoderadoController@index']);
@@ -80,6 +92,8 @@ use App\models\roles;
 		Route::get('profesores/persona/{per_rut}', ['as' => 'profesores/persona', 'uses' => 'ProfesorController@getRol']);
 		Route::get('profesores_asignado', ['as' => 'profesores_asignado', 'uses' => 'CursoController@getProfesores']);
 		Route::get('cursos_disponibles', ['as' => 'cursos_disponibles', 'uses' => 'CursoController@getCursoDisponible']);
+		Route::get('cursos_disponibles_profesores/{per_rut}', ['as' => 'cursos_disponibles_profesores', 'uses' => 'CursoController@getCursoDisponibleProfesor']);
+		Route::get('persona_rol/{per_rut}/{cur_codigo}', ['as' => 'persona_rol', 'uses' => 'PersonaController@getPersonaRol']);
 		
 		Route::get('alumno_matriculado/{per_rut}', ['as' => 'alumno_matriculado', 'uses' => 'AlumnoController@getAlumno']);
 		Route::get('alumno_administrador/{per_rut}', ['as' => 'alumno_administrador', 'uses' => 'AlumnoController@getAlumno']);

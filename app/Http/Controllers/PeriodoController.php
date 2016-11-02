@@ -13,6 +13,7 @@ use App\models\Aplicacion;
 use Session;
 use App\models\periodo;
 use DB;
+use App\models\anyo;
 
 class PeriodoController extends Controller
 {
@@ -128,9 +129,11 @@ class PeriodoController extends Controller
 		if (isset($input['pri_activo'])){
 			$periodo = periodo::where('pri_activo', '=', 1)->update(['pri_activo' => 0]);
 		}
+		$anyo = anyo::where('anyos.any_activo', '=', 1)->first();
 		$periodo_new->pri_nombre 		= $input['pri_nombre'];
 		$periodo_new->pri_orden  		= $input['pri_orden'];
 		$periodo_new->pri_activo  		= isset($input['pri_activo']) ? 1 : 0;
+		$periodo_new->any_codigo		= $anyo->any_codigo; 
 		$periodo_new->save();
 		return redirect()->route('periodos.index');
 	}
@@ -172,11 +175,13 @@ class PeriodoController extends Controller
 		if ($periodo_upd->count()>0 || isset($input['pri_activo'])){
 			$periodo = periodo::where('pri_activo', '=', 1)->update(['pri_activo' => 0]);
 		}
+		$anyo = anyo::where('anyos.any_activo', '=', 1)->first();
 		$periodo = periodo::find($id);
 		$periodo->pri_codigo		= $id;
 		$periodo->pri_nombre 		= $input['pri_nombre'];
 		$periodo->pri_orden  		= $input['pri_orden'];
 		$periodo->pri_activo  		= isset($input['pri_activo']) ? 1 : 0;
+		$periodo->any_codigo		= $anyo->any_codigo; 
 		$periodo->save();
 		return redirect()->route('periodos.index');
 	}
