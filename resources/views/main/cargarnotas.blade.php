@@ -44,7 +44,16 @@ else {
 	
 
 		$(document).ready(function() {
-			var userid = {{ $user }};
+ 			var validator = $('#myform').validate({
+			    rules: {
+				    'import_file'			: { required: true, extension: "xls"  }
+		    	},
+			    messages: {
+				    'import_file' 			: 'Debe ingresar un archivo xls' 
+				},
+			});
+
+ 			var userid = {{ $user }};
 			var curcodigo = {{ $cur_codigo }};
 			if (url == null){
 				var url = '{{ $entidad['controller'] }}';
@@ -105,7 +114,6 @@ else {
 				event.preventDefault();
 				event.stopPropagation();
 				$('#myModalLibroImport').modal('show')
-				
 			});
  			$( "#import_all" ).click(function( event ) {
  				$('#myModalLibroImport').modal('toggle');
