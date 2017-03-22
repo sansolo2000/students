@@ -573,7 +573,9 @@ class CargarNotasController extends Controller
 								->select('asignaturas.asg_codigo', 'profesores.per_rut', 'asignaturas.asg_nombre')
 								->where('asignaturas.asg_nombre', '=', $sheetName)
 								->first();
-				if ($idusuario != 1){
+				
+				$roles = util::roles_persona($idusuario);								
+				if (($roles->rol_nombre != 'Administrador' || $roles->rol_nombre != 'Direccion')){
 					if ((!($profesor->per_rut == $idusuario || $asignatura->per_rut == $idusuario)) && ($validar)){
 						$validar = false;
 						$mensajes[] = array('tipo' => 1, 'descripcion' => 'La asignatura de '.$asignatura->asg_nombre .' no esta asignado al profesor y no es profesor jefe');

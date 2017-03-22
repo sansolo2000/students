@@ -6,6 +6,14 @@
 	
 	
 	class util{
+		 public static function roles_persona($per_rut){
+			$roles = persona::join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
+		 						->join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')
+		 						->where('personas.per_rut', '=', $per_rut)
+		 						->first();
+			return $roles;
+		 }
+			
 		 public static function print_a( $algo='', $exit ){
 			echo "<div style='border:1px solid red;clear:both;'><pre>";
 			print_r( $algo );
