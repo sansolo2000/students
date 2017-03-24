@@ -268,7 +268,6 @@ class CursoController extends Controller
 		$curso->any_codigo  		= $input['any_numero'];
 		$curso->pro_codigo  		= $profesor['pro_codigo'];
 		$curso->col_codigo  		= $colegio['col_codigo'];
-		$curso->cur_cantidad_notas 	= $input['cur_cantidad_notas'];
 		$curso->cur_activo  		= isset($input['cur_activo']) ? 1 : 0;
 		$curso->save();
 		

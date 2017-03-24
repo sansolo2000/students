@@ -101,13 +101,11 @@ else {
 				'niv_nombre'			:	{required: true, min:1},
 				'any_numero'			:	{required: true, min:1},
 				'pro_nombre'			:	{required: true, min:1},
-				'cur_cantidad_notas'	:	{required: true, number: true, range: [1, 10]},
 			},
 				messages: {
 				'niv_nombre'			: { min: 'Seleccione nivel' },
 				'any_numero'			: { min: 'Seleccione a\u00f1o' },
 				'pro_nombre'			: { min: 'Seleccione profesor' },
-				'cur_cantidad_notas'	: {range: 'la cantidad de notas deben ir entre 1 y 10'}	
 			
 			},
 		});
@@ -173,7 +171,7 @@ else {
 							<label for="curso" class="control-label">Cantidad de notas:</label>
 						</div>
 						<div class="col-sm-9">
-							<input class="form-control" id="cur_cantidad_notas" name="cur_cantidad_notas" value="{{ $record['cur_cantidad_notas'] }}" placeholder="Cantidad de notas de las asignatura por semestre" type="text">
+							<input class="form-control" id="cur_cantidad_notas" name="cur_cantidad_notas" value="{{ $record['cur_cantidad_notas'] }}" placeholder="Cantidad de notas de las asignatura por semestre" disabled="disabled" type="text">
 						</div>
 					</div>
 					<div class="form-group col-sm-12">
