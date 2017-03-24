@@ -62,9 +62,21 @@ else {
 			$('#import_all').attr('href', url+'/uploadscore/{{ $cur_codigo }}/'+$("#pri_nombre_3").val());
 			
 			var cur_codigo = $("#hid_cur_codigo").val();
+			if ($("#pri_nombre_2").val() == -1){				
+				$("#mensaje").hide();
+			}
+
 			$("#pri_nombre_2").change(function() {
 				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val());
+				if ($("#pri_nombre_2").val() == 0){				
+					$("#mensaje").show();
+				}
+				else {
+					$("#mensaje").hide();
+				}	
 			});
+
+
 			$.get("/students/public/cursos_disponibles_profesores/"+userid, function(response,state){
 				if (response.length == 0){
 					BootstrapDialog.alert({
@@ -131,7 +143,7 @@ else {
 			console.log(2);
 			if (errores !== ''){
 				BootstrapDialog.alert({
-			            title: 'Error',
+			            title: 'Resultado de carga realidad',
 			            message: errores,
 			            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
 			            closable: true, // <-- Default value is false
@@ -273,7 +285,7 @@ else {
 						<label for="curso" class="control-label">Periodos:</label>
 					</div>
 					<div class="col-sm-4">
-						{{ Form::select('pri_nombre_2', $periodo2, 0, ['id' => 'pri_nombre_2', 'class' => 'form-control', 'name' => 'pri_nombre_2' ]) }}								
+						{{ Form::select('pri_nombre_2', $periodo2, -1, ['id' => 'pri_nombre_2', 'class' => 'form-control', 'name' => 'pri_nombre_2' ]) }}								
 					</div>
 					<div class="col-sm-4">
 						&nbsp;
@@ -282,10 +294,14 @@ else {
 				
 			</div>
 			<div class="modal-footer">
-				<input type="hidden" value="1" id="codigo">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>
-				<a class="btn btn-primary" id="export_all">Exportar</a>
-<!-- 				<button type="button" class="btn btn-primary" id="export">Exportar</button> -->
+				<div class="col-sm-8">
+					<label for="curso" class="label label-warning" id="mensaje" >Esta planilla no permite la carga de datos.  Es solo informativo.</label>
+				</div>
+				<div class="col-sm-4">
+					<input type="hidden" value="1" id="codigo">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Volver</button>
+					<a class="btn btn-primary" id="export_all">Exportar</a>
+				</div>
 			</div>
 		</div>
 	</div>

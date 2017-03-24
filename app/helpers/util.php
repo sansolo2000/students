@@ -23,6 +23,10 @@
 			}			
 		}
 		public static function array_indice($datos, $default){
+			if ($default == 3){
+				$array_retorno[-1] = ':: Seleccionar ::';
+				$array_retorno[0] = 'Todos';
+			}
 			if ($default == 0){
 				$array_retorno[0] = 'Todos';
 			}

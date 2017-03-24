@@ -279,7 +279,7 @@ class CargarNotasController extends Controller
  									->lists('pri_nombre', 'pri_codigo')
  									->toArray();
  			$periodo2 = $periodo;
- 			$periodo2 = util::array_indice($periodo, 0);
+ 			$periodo2 = util::array_indice($periodo, 3);
  			$periodo = util::array_indice($periodo, -1);
  			
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'cargarnotas', 'pk' => 'cur_codigo', 'clase' => 'container col-md-12', 'col' => 5);
@@ -527,12 +527,17 @@ class CargarNotasController extends Controller
 				
 				$periodo = $results[3][9];
 				if ($periodo == 'Todos'){
-					$j = 1;
-					$anyo = anyo::where('anyos.any_activo', '=', 1)->first();
-					$pri_periodo = periodo::where('periodos.any_codigo', '=', $anyo->any_codigo)->get()->toArray();
+					$validar = false;
+					$mensajes[] = array('tipo' => 2, 'descripcion' => 'La planilla carga correspode al a&ntilde;o completo y \nsolo pueden ser cargadas las planilla de un periodo especifico.');
+					break;
 				}
 				else {
 					$pri_periodo = periodo::where('periodos.pri_nombre', '=', $periodo)->First();
+					if ($pri_periodo->pri_cerrado == 1){
+						$validar = false;
+						$mensajes[] = array('tipo' => 2, 'descripcion' => 'La planilla correspode a un periodo cerrado por la direcci&oacute;n, \npor lo tanto, no puede ser cargadas.');
+						break;
+					}
 				}
 				$i = 1;
 				$x = 4;
@@ -642,12 +647,8 @@ class CargarNotasController extends Controller
 						for ($j = 3; $j <= count($notas) + 2; $j++){
 							if ($notas[$j]['Nota']){
 								$fila =  $columna[$j];
-								if ($periodo != 'Todos'){
-									$pri_codigo = $pri_periodo->pri_codigo;
-								}
-								else{
-									$pri_codigo = $pri_periodo[$notas[$j]['periodo']]['pri_codigo'];
-								}
+
+								$pri_codigo = $pri_periodo->pri_codigo;
 
 								$calificacion = calificacion::where('asg_codigo', '=', $asignatura['asg_codigo'])
 														->where('cal_posicion', '=', $nota)

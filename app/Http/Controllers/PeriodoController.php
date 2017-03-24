@@ -66,7 +66,7 @@ class PeriodoController extends Controller
 				}
 				$periodos = $periodos->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => 'Periodos', 'controller' => '/'.util::obtener_url().'periodos', 'pk' => 'pri_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 4);
+			$entidad = array('Nombre' => 'Periodos', 'controller' => '/'.util::obtener_url().'periodos', 'pk' => 'pri_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
@@ -132,6 +132,7 @@ class PeriodoController extends Controller
 		$anyo = anyo::where('anyos.any_activo', '=', 1)->first();
 		$periodo_new->pri_nombre 		= $input['pri_nombre'];
 		$periodo_new->pri_orden  		= $input['pri_orden'];
+		$periodo_new->pri_cerrado  		= isset($input['pri_cerrado']) ? 1 : 0;
 		$periodo_new->pri_activo  		= isset($input['pri_activo']) ? 1 : 0;
 		$periodo_new->any_codigo		= $anyo->any_codigo; 
 		$periodo_new->save();
@@ -180,6 +181,7 @@ class PeriodoController extends Controller
 		$periodo->pri_codigo		= $id;
 		$periodo->pri_nombre 		= $input['pri_nombre'];
 		$periodo->pri_orden  		= $input['pri_orden'];
+		$periodo->pri_cerrado  		= isset($input['pri_cerrado']) ? 1 : 0;
 		$periodo->pri_activo  		= isset($input['pri_activo']) ? 1 : 0;
 		$periodo->any_codigo		= $anyo->any_codigo; 
 		$periodo->save();
@@ -204,6 +206,16 @@ class PeriodoController extends Controller
 				'descripcion'	=> 'Orden',
 				'value'			=> '',
 				'tipo'			=> 'input',
+				'select'		=> 0,
+				'filter'		=> 0,
+				'enable'		=> true);
+		$tabla[] = array(	'nombre' 		=> 'Cerrado',
+				'campo'			=> 'pri_cerrado',
+				'clase' 		=> 'container col-md-1',
+				'validate'		=> '',
+				'descripcion'	=> 'Cerrado',
+				'value'			=> '',
+				'tipo'			=> 'check',
 				'select'		=> 0,
 				'filter'		=> 0,
 				'enable'		=> true);
