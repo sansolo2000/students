@@ -42,7 +42,7 @@ else {
 							<th style="width:10%">Numero</th>
 							<th style="width:10%">Letra</th>
 							<th style="width:33%">Profesor</th>
-							<th style="width:10%">Numero</th>
+							<th style="width:10%">Nivel</th>
 							<th style="width:12%">A&ntilde;o</th>
 							<th style="width:10%">Estado</th>
 							<th style="width:15%">Acciones</th>

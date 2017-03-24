@@ -34,6 +34,7 @@ class CursoController extends Controller
 	public $per_nombre;
 	public $niv_codigo;
 	public $niv_nombre;
+	public $cur_cantidad_notas;
 	
 	public $Privilegio_modulo = 'Cursos';
 	public $paginate = 10;
@@ -168,7 +169,7 @@ class CursoController extends Controller
 										->lists('any_numero', 'any_codigo');
 			$this->any_numero = util::array_indice($this->any_numero, -1);
 			$tabla = CursoController::arreglo();
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'cursos', 'pk' => 'com_codigo', 'clase' => 'container col-sm-6 col-sm-offset-3', 'label' => 'container col-md-4');
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'cursos', 'pk' => 'com_codigo', 'clase' => 'container col-sm-8 col-sm-offset-2', 'label' => 'container col-md-4');
 			return view('mantenedor.add_curso')
 						->with('menu', $menu)
 						->with('niv_nombre', $this->niv_nombre)
@@ -197,6 +198,7 @@ class CursoController extends Controller
 		$curso->any_codigo  		= $input['any_numero'];
 		$curso->pro_codigo  		= $profesor['pro_codigo'];
 		$curso->col_codigo  		= $colegio['col_codigo'];
+		$curso->cur_cantidad_notas 	= $input['cur_cantidad_notas'];
 		$curso->cur_activo  		= isset($input['cur_activo']) ? 1 : 0;
 		$curso->save();
 		return redirect()->route('cursos.index');
@@ -222,13 +224,13 @@ class CursoController extends Controller
 			$colegio = new colegio();
 			$colegio = Colegio::where('col_activo', '=', 1)->first();
 			$tabla = CursoController::arreglo();
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'cursos', 'pk' => 'cur_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'cursos', 'pk' => 'cur_codigo', 'clase' => 'container col-md-8 col-md-offset-2', 'label' => 'container col-md-4');
 			$record = Curso::join('colegios', 'colegios.col_codigo', '=', 'cursos.col_codigo')
 				->join('niveles', 'niveles.niv_codigo', '=', 'cursos.niv_codigo')
 				->join('anyos', 'cursos.any_codigo', '=', 'anyos.any_codigo')
 				->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
 				->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
-				->select('cursos.cur_codigo', 'cursos.cur_letra', 'cursos.cur_numero', 'cursos.pro_codigo', 'cursos.niv_codigo', 'niveles.niv_nombre', 'cursos.any_codigo', 'anyos.any_numero', 'personas.per_rut', 'personas.per_dv', 'personas.per_nombre', 'personas.per_apellido_paterno', 'cursos.cur_activo')
+				->select('cursos.cur_codigo', 'cursos.cur_letra', 'cursos.cur_numero', 'cursos.pro_codigo', 'cursos.niv_codigo', 'niveles.niv_nombre', 'cursos.any_codigo', 'anyos.any_numero', 'personas.per_rut', 'personas.per_dv', 'personas.per_nombre', 'personas.per_apellido_paterno', 'cursos.cur_cantidad_notas', 'cursos.cur_activo')
 				->where('cur_codigo', '=', $id)
 				->first();
 			
@@ -266,6 +268,7 @@ class CursoController extends Controller
 		$curso->any_codigo  		= $input['any_numero'];
 		$curso->pro_codigo  		= $profesor['pro_codigo'];
 		$curso->col_codigo  		= $colegio['col_codigo'];
+		$curso->cur_cantidad_notas 	= $input['cur_cantidad_notas'];
 		$curso->cur_activo  		= isset($input['cur_activo']) ? 1 : 0;
 		$curso->save();
 		
@@ -416,6 +419,16 @@ class CursoController extends Controller
 							'tipo'			=> 'select',
 							'select'		=> $this->any_numero,
 							'filter'		=> 1,
+							'enable'		=> true);
+		$tabla[] = array(	'nombre' 		=> 'Cantidad Notas',
+							'campo'			=> 'cur_cantidad_notas',
+							'clase' 		=> 'container col-md-5',
+							'validate'		=> '',
+							'descripcion'	=> 'Cantidad Notas',
+							'tipo'			=> 'input',
+							'select'		=> 0,
+							'value'			=> $this->cur_cantidad_notas,
+							'filter'		=> 3,
 							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Estado',
 							'campo'			=> 'cur_activo',
