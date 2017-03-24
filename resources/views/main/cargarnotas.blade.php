@@ -58,15 +58,12 @@ else {
 			if (url == null){
 				var url = '{{ $entidad['controller'] }}';
 			}
-			$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+			$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val());
 			$('#import_all').attr('href', url+'/uploadscore/{{ $cur_codigo }}/'+$("#pri_nombre_3").val());
 			
 			var cur_codigo = $("#hid_cur_codigo").val();
-			$("#CantNotas").change(function() {
-				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
-			});
 			$("#pri_nombre_2").change(function() {
-				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val()+'/'+$("#CantNotas").val());
+				$('#export_all').attr('href', url+'/downloadscore/{{ $cur_codigo }}/'+$("#pri_nombre_2").val());
 			});
 			$.get("/students/public/cursos_disponibles_profesores/"+userid, function(response,state){
 				if (response.length == 0){
@@ -271,17 +268,6 @@ else {
 				<h4 class="modal-title" id="myModalLabel">Exportar libro de clase a Excel</h4>
 			</div>
 			<div class="modal-body">
-				<div class="row">
-					<div class="col-sm-4">
-						<label for="curso" class="control-label">Cantidad de notas:</label>
-					</div>
-					<div class="col-sm-2">
-						<input class="form-control" id="CantNotas" name="CantNotas" placeholder="Cantidad Notas" type="text" value="{{ $CantidadNotas }}">
-					</div>
-					<div class="col-sm-6">
-						&nbsp;
-					</div>
-				</div>
 				<div class="row">
 					<div class="col-sm-4">
 						<label for="curso" class="control-label">Periodos:</label>
