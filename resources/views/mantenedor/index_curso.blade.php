@@ -46,7 +46,7 @@ else {
 							<th style="width:12%">A&ntilde;o</th>
 							<th style="width:10%">Estado</th>
 							<th style="width:15%">Acciones</th>
-						</tr>
+						</tr> 
 					</thead>
 					<tbody>
 							{{ Form::model(Request::all(), array('url' => $entidad['controller'].'/search', 'class' => 'pull-right')) }}

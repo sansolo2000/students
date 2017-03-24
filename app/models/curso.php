@@ -4,7 +4,7 @@ namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class curso extends Model
+class curso extends Model 
 {
 	protected $table = 'cursos';
 	protected $primaryKey = 'cur_codigo';

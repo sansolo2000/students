@@ -94,7 +94,7 @@ function validar_curso(){
 				messages: {
 				'niv_nombre'			: { min: 'Seleccione nivel' },
 				'any_numero'			: { min: 'Seleccione a\u00f1o' },
-				'pro_nombre'			: { min: 'Seleccione profesor' },
+				'pro_nombre'			: { min: 'Seleccione profesor' }, 
 				'cur_cantidad_notas'	: {range: 'la cantidad de notas deben ir entre 1 y 10'}	
 			},
 		});
