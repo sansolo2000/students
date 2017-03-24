@@ -561,31 +561,11 @@ class ApoderadoController extends Controller
 										$persona->per_apellido_materno 	= $value[7];
 										$persona->per_email				= $value[8];
 										$persona->save();
-										
-										$rol = new rol;
-										$rol = Rol::where('rol_nombre', '=', 'Apoderado')->first();
-										
-										$asignacion = new asignacion();
-										$asignacion->rol_codigo = $rol->rol_codigo;
-										$asignacion->per_rut = $rut_apo['numero'];
-										$asignacion->save();
-										
 										$apoderado = new apoderado();
 										$apoderado->per_rut  = $rut_apo['numero'];
 										$apoderado->apo_fono = $value[9];
 										$apoderado->save();
-
-										$alumno = Alumno::where('alumnos.per_rut', '=', $rut_alu['numero'])
-														->first();
-
-										$apoderado_alumno = new apoderado_alumno();
-										$apoderado_alumno->apo_codigo = $apoderado->apo_codigo;
-										$apoderado_alumno->alu_codigo = $alumno->alu_codigo;
-										$apoderado_alumno->save();
-										unset($persona_new);
-										unset($asignacion_new);
-										unset($apoderado_new);
-										unset($apoderado_alumno_new);
+										$id_apoderado = $apoderado->apo_codigo;
 									}
 									else {
 										$persona_upd = new persona();
@@ -599,7 +579,34 @@ class ApoderadoController extends Controller
 										$apoderado_upd = Apoderado::where('apoderados.per_rut', '=', $rut_apo['numero'])->first();
 										$apoderado_upd->apo_fono				= $value[9];
 										$apoderado_upd->save();
+										$id_apoderado = $apoderado_upd->apo_codigo;
 									}
+										
+									$rol = new rol;
+									$rol = Rol::where('rol_nombre', '=', 'Apoderado')->first();
+									
+									$cantidad = asignacion::where('per_rut', '=', $rut_apo['numero'])->where('rol_codigo', '=', $rol->rol_codigo)->count();
+									if ($cantidad == 0){
+										$asignacion = new asignacion();
+										$asignacion->rol_codigo = $rol->rol_codigo;
+										$asignacion->per_rut = $rut_apo['numero'];
+										$asignacion->save();
+									}
+										
+
+									$alumno = Alumno::where('alumnos.per_rut', '=', $rut_alu['numero'])->first();
+										
+									$cantidad = apoderado_alumno::where('apo_codigo', '=', $id_apoderado)->where('alu_codigo', '=', $alumno->alu_codigo)->count();
+									if ($cantidad == 0){
+										$apoderado_alumno = new apoderado_alumno();
+										$apoderado_alumno->apo_codigo = $apoderado->apo_codigo;
+										$apoderado_alumno->alu_codigo = $alumno->alu_codigo;
+										$apoderado_alumno->save();
+									}
+									unset($persona_new);
+									unset($asignacion_new);
+									unset($apoderado_new);
+									unset($apoderado_alumno_new);
 								}
 							}
 						}
