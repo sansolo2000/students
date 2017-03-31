@@ -239,9 +239,16 @@ class CargarNotasController extends Controller
 				$suma = 0;
 				$cantidad_notas = 0;
 				foreach ($calificaciones as $calificacion) {
-					$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>'.number_format($calificacion->cal_numero, 1, ',', ' ').'</th>';
-					$NotasMostrar[$calificacion->cal_posicion]['exite'] = true;
-					$NotasMostrar[$calificacion->cal_posicion]['nota'] = $calificacion->cal_numero;
+					if ((float) $calificacion->cal_numero > 0){
+						$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>'.number_format($calificacion->cal_numero, 1, ',', ' ').'</th>';
+						$NotasMostrar[$calificacion->cal_posicion]['exite'] = true;
+						$NotasMostrar[$calificacion->cal_posicion]['nota'] = $calificacion->cal_numero;
+					}
+					else{
+						$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>&nbsp;</td>';
+						$NotasMostrar[$calificacion->cal_posicion]['exite'] = false;
+						$NotasMostrar[$calificacion->cal_posicion]['nota'] = 0;
+					}
 				}
 				for ($i = 1; $i <= $cantidad; $i++){
 					if (!isset($NotasMostrar[$i])){
@@ -377,20 +384,32 @@ class CargarNotasController extends Controller
 							$data[$ind][$columnas_excel[$pos]['name']] 	= $alumno->per_nombre.' '.$alumno->per_apellido_paterno.' '.$alumno->per_apellido_materno;
 							$pos++;
 							foreach ($periodos as $periodo){
-								$calificaciones = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
-											->where('asignaturas.cur_codigo', '=', $profesor->cur_codigo)
-											->where('asignaturas.asg_codigo', '=', $alumno->asg_codigo)
-											->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
-											->where('calificaciones.pri_codigo', '=', $periodo['pri_codigo'])
-											->select('calificaciones.cal_numero')
-											->get();
 								$col = $pos;
-								foreach ($calificaciones as $calificacion) {
-									$data[$ind][$columnas_excel[$pos]['name']] = (float) $calificacion->cal_numero;
-									$pos++;
-								}
-								while ($pos <= ($notas+$col-1)) {
-									$data[$ind][$columnas_excel[$pos]['name']] = '';
+								$curso = curso::where('cursos.cur_codigo', '=', $profesor->cur_codigo)->first();
+								$cantidadnotas = $curso->cur_cantidad_notas;
+								for ($i=1; $i <= $cantidadnotas; $i++){
+									$calificaciones = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
+									->where('asignaturas.cur_codigo', '=', $profesor->cur_codigo)
+									->where('asignaturas.asg_codigo', '=', $alumno->asg_codigo)
+									->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
+									->where('calificaciones.pri_codigo', '=', $periodo['pri_codigo'])
+									->where('calificaciones.cal_posicion', '=', $i)
+									->select('calificaciones.cal_numero');
+									
+									$calificacionexiste = $calificaciones->count();
+									
+									if($calificacionexiste == 1){
+										$calificacion = $calificaciones->first();
+										if ((float) $calificacion->cal_numero > 0){
+											$data[$ind][$columnas_excel[$pos]['name']] = (float) $calificacion->cal_numero;
+										}
+										else{
+											$data[$ind][$columnas_excel[$pos]['name']] = '';
+										}
+									}
+									else{
+										$data[$ind][$columnas_excel[$pos]['name']] = '';
+									}
 									$pos++;
 								}
 								$row = $ind + 7;
@@ -679,8 +698,12 @@ class CargarNotasController extends Controller
 										$calificacion_upd->save();
 									}
 									else {
-										$calificacion_del = $calificacion->first();
-										$calificacion_del->delete();
+										$calificacion = $calificacion->first();
+										$calificacion_upd = new calificacion();
+										$calificacion_upd = calificacion::find($calificacion->cal_codigo);
+										$calificacion_upd->cal_numero 		= -1;
+										$calificacion_upd->cal_fecha		= $fecha;
+										$calificacion_upd->save();
 									}
 								}
 								$nota++;

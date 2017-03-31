@@ -63,6 +63,13 @@
 		public static function obtener_url(){
 			return '/localhost/students/public/';
 		}
+		public static function obtener_url_fija(){
+			return 'http://localhost/students/public/';
+		}
+		public static function intentos(){
+			return 3;
+		}
+		
 		public static function alfabeto($position){
 			$alfabeto[] = 'A';
 			$alfabeto[] = 'B';
@@ -123,5 +130,19 @@
 				return $alfabeto[$position];
 			}
 			
+		}
+		public static function generarCodigo($longitud) {
+			$key = '';
+			$pattern = '1234567890abcdefghijklmnopqrstuvwxyz';
+			$max = strlen($pattern)-1;
+			for($i=0;$i < $longitud;$i++) $key .= $pattern{mt_rand(0,$max)};
+			return $key;
+		}
+		
+		public static function quitar_tildes($cadena) {
+			$no_permitidas= array ("á","é","í","ó","ú","Á","É","Í","Ó","Ú","ñ","À","Ã","Ì","Ò","Ù","Ã™","Ã ","Ã¨","Ã¬","Ã²","Ã¹","ç","Ç","Ã¢","ê","Ã®","Ã´","Ã»","Ã‚","ÃŠ","ÃŽ","Ã”","Ã›","ü","Ã¶","Ã–","Ã¯","Ã¤","«","Ò","Ã","Ã„","Ã‹");
+			$permitidas= array ("a","e","i","o","u","A","E","I","O","U","n","N","A","E","I","O","U","a","e","i","o","u","c","C","a","e","i","o","u","A","E","I","O","U","u","o","O","i","a","e","U","I","A","E");
+			$texto = str_replace($no_permitidas, $permitidas ,$cadena);
+			return $texto;
 		}
 	}

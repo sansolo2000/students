@@ -32,7 +32,7 @@ else {
 
 <script type="text/javascript">
 	$(document).ready(function() {
-
+		console.log('hola');
 		$("#apo_rut").change(function(event){
 			$.get("../../alumno_apoderado/"+event.target.value+"", function(response,state){
 				if (response.length > 0){
@@ -167,7 +167,39 @@ else {
 			            //}
 			        });
 				}
-			});
+		});
+		$('#per_email').change(function(event){
+			per_rut = apo_rut.value;
+			if (per_rut.length == 0){
+				$('#per_email').val('');
+				$('#apo_rut').focus();
+				BootstrapDialog.alert({
+					title: 'Error',
+					message: 'El Run debe ser ingresado primero',
+					type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+					closable: true, // <-- Default value is false
+					draggable: true, // <-- Default value is false
+					buttonLabel: 'Volver', // <-- Default value is 'OK',
+				});
+			}
+			else{
+				$.get('../../validar_email/'+event.target.value+'/'+per_rut, function(response,state){
+					console.log(response);
+					if (response > 0){
+						console.log(response[0]);
+						BootstrapDialog.alert({
+							title: 'Error',
+							message: 'El E-Mail esta ingresado por otro usuario',
+							type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+							closable: true, // <-- Default value is false
+							draggable: true, // <-- Default value is false
+							buttonLabel: 'Volver', // <-- Default value is 'OK',
+						});
+						$('#per_email').val('');			
+					}
+				});
+			}
+		});
 	});
 	
 </script>
@@ -208,6 +240,7 @@ else {
 										<div class="col-sm-2">
 											<input class="form-control" id="alu_numero" name="alu_numero" type="text" value="{{ $record['alu_numero'] }}" disabled="disabled">
 											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso['cur_codigo'] }}" type="hidden">
+											<input class="form-control" id="alu_codigo" name="alu_codigo" value="{{ $curso['alu_codigo'] }}" type="hidden">
 										</div>
 										<div class="col-sm-1">
 											<label for="curso" class="control-label">Rut:</label>

@@ -19,11 +19,34 @@ class IndexController extends Controller
 		$error = '';
 		$value = Session::get('error_session');
 		Session::forget('error_session');
-		if ($value == 'Password'){
-			$error = '<script type="text/javascript">';
-			$error .= 'BootstrapDialog.alert({';
-			$error .= '		title: "Error",';
-			$error .= '    	message: "El usuario y password proporcionado no son correctos",';
+		$error = '<script type="text/javascript">';
+		$error .= 'BootstrapDialog.alert({';
+		switch ($value){
+			case 'Password':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario y password proporcionado no son correctos",';
+				break;
+			case 'Rol':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario no tiene el rol seleccionado",';
+				break;
+			case 'NoExiste':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario no tiene el rol seleccionado",';
+				break;
+			case 'Intentos':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario esta bloqueado, super&oacute; la cantidad de intentos",';
+				break;
+			case 'email':
+				$error .= '		title: "Informaci&oacute;n",';
+				$error .= '    	message: "Su nueva contrase&ntilde;a ha sido enviada al correo registrado",';
+				break;
+			default:
+				$error = '';
+				break;
+		}
+		if ($error != ''){
 			$error .= '		type: BootstrapDialog.TYPE_WARNING,';
 			$error .= '		closable: true,';
 			$error .= '		draggable: true,';
@@ -44,11 +67,35 @@ class IndexController extends Controller
 		$error = '';
 		$value = Session::get('error_session');
 		Session::forget('error_session');
-		if ($value == 'Password'){
-			$error = '<script type="text/javascript">';
-			$error .= 'BootstrapDialog.alert({';
-			$error .= '		title: "Error",';
-			$error .= '    	message: "El usuario y password proporcionado no son correctos",';
+		$error = '<script type="text/javascript">';
+		$error .= 'BootstrapDialog.alert({';
+		$error .= '		title: "Error",';
+		switch ($value){
+			case 'Password':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario y password proporcionado no son correctos",';
+				break;
+			case 'Rol':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario no tiene el rol seleccionado",';
+				break;
+			case 'NoExiste':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario no tiene el rol seleccionado",';
+				break;
+			case 'Intentos':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario esta bloqueado, super&oacute; la cantidad de intentos",';
+				break;
+			case 'email':
+				$error .= '		title: "Informaci&oacute;n",';
+				$error .= '    	message: "Su nueva contrase&ntilde;a ha sido enviada al correo registrado",';
+				break;
+			default:
+				$error = '';
+				break;
+		}
+		if ($error != ''){
 			$error .= '		type: BootstrapDialog.TYPE_WARNING,';
 			$error .= '		closable: true,';
 			$error .= '		draggable: true,';
@@ -65,19 +112,45 @@ class IndexController extends Controller
 	}
 	
 	function Error_login() {
-		
+		$error = '';
+		$value = Session::get('error_session');
+		Session::forget('error_session');
 		$error = '<script type="text/javascript">';
 		$error .= 'BootstrapDialog.alert({';
 		$error .= '		title: "Error",';
-		$error .= '    	message: "Debe ingresar usuario y password para poder acceder al sistema",';
-		$error .= '		type: BootstrapDialog.TYPE_WARNING,';
-		$error .= '		closable: true,';
-		$error .= '		draggable: true,';
-		$error .= '		buttonLabel: "Volver"';
-		$error .= '});';
-        $error .= '</script>';
-        
-		
+		switch ($value){
+			case 'Password':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario y password proporcionado no son correctos",';
+				break;
+			case 'Rol':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario no tiene el rol seleccionado",';
+				break;
+			case 'NoExiste':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario no tiene el rol seleccionado",';
+				break;
+			case 'Intentos':
+				$error .= '		title: "Error",';
+				$error .= '    	message: "El usuario esta bloqueado, super&oacute; la cantidad de intentos",';
+				break;
+			case 'email':
+				$error .= '		title: "Informaci&oacute;n",';
+				$error .= '    	message: "Su nueva contrase&ntilde;a ha sido enviada al correo registrado",';
+				break;
+			default:
+				$error = '';
+				break;
+		}
+		if ($error != ''){
+			$error .= '		type: BootstrapDialog.TYPE_WARNING,';
+			$error .= '		closable: true,';
+			$error .= '		draggable: true,';
+			$error .= '		buttonLabel: "Volver"';
+			$error .= '});';
+			$error .= '</script>';
+		}
 		Auth::logout();
 		$arrRol = 	rol::where('rol_admin', '<>', '1')
 					->where('rol_activo', '=', '1')

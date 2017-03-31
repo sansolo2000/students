@@ -51,4 +51,30 @@ class PersonaController extends Controller
 			return $usuario;
 		}
 	}
+	public function getRol(Request $request, $per_rut){
+		$rut = util::format_rut($per_rut);
+		if ($request->ajax()){
+			$persona = new persona();
+			$records = Persona::join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
+			->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
+			->where('personas.per_rut', '=', $rut['numero'])->get();
+			return response()->json($records);
+		}
+	}
+	
+	public function ValidarEmail(Request $request, $per_email, $per_rut){
+		$persona = new persona();
+		$rut = util::format_rut($per_rut);
+		$records = Persona::join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
+		->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
+		->where('personas.per_email', '=', $per_email)
+		->where('personas.per_rut', '!=', $rut['numero'])->count();
+		if ($request->ajax()){
+			return response()->json($records);
+		}
+		else{
+			util::print_a($records,0);
+		}
+	}
+	
 }

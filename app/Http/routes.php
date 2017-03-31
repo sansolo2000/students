@@ -28,6 +28,8 @@ use App\models\roles;
 		Route::get('auth/login', ['as' => 'auth/login', 'uses' => 'Auth\AuthController@authenticate']);
 		Route::post('auth/login', ['as' => 'auth/login', 'uses' => 'Auth\AuthController@authenticate']);
 		Route::get('logout', ['as' => 'logout', 'uses' => 'IndexController@Root']);
+		Route::get('recordarpassword/{numero}', ['as' => 'recordarpassword', 'uses' => 'RecordarPasswordController@RecordarPassword']);
+		Route::post('enviarcorreo', ['as' => 'enviarcorreo', 'uses' => 'RecordarPasswordController@EnviarCorreo']);
 	});
 
 	Route::group(['middleware' => ['web','auth']], function () {
@@ -48,7 +50,7 @@ use App\models\roles;
 		Route::resource('cargarnotas', 'CargarNotasController');
 		Route::resource('asignaturas', 'AsignaturaController');
 		Route::resource('periodos', 'PeriodoController');
-		Route::resource('vernotas', 'VerNotasController');
+		Route::resource('ver_notas', 'VerNotasController');
 		
 		Route::get('perfiles/modulo/{apl_codigo}/{rol_codigo}', ['as' => 'perfiles/modulo', 'uses' => 'Modulo_AsignadoController@getModulo']);
 		Route::get('perfiles/{id}/modulo/{apl_codigo}/{rol_codigo}', ['as' => 'perfiles/modulo', 'uses' => 'Modulo_AsignadoController@getModulo']);
@@ -69,7 +71,7 @@ use App\models\roles;
 		Route::post('vernotas/search_curso', ['as' => 'vernotas/search_curso', 'uses' => 'VerNotasController@index']);
 		
 		
-		Route::get('cargarnotas/downloadscore/{curso}/{periodos}/{notas}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
+		Route::get('cargarnotas/downloadscore/{curso}/{periodos}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
 		Route::post('cargarnotas/uploadscore', ['as' => 'cargarnotas/uploadscore', 'uses' => 'CargarNotasController@importar_calificaciones']);
 		
 		
@@ -89,17 +91,26 @@ use App\models\roles;
 		Route::get('asignaturas/create/{id}', ['as' => 'asignaturas/create', 'uses' => 'AsignaturaController@create']);
 		Route::get('alumnos/create/{id}', ['as' => 'alumnos/create', 'uses' => 'AlumnoController@create']);
 		Route::get('colegios/comuna/{reg_codigo}', ['as' => 'colegios/comuna', 'uses' => 'ComunaController@getComuna']);
-		Route::get('profesores/persona/{per_rut}', ['as' => 'profesores/persona', 'uses' => 'ProfesorController@getRol']);
+		Route::get('profesores/persona/{per_rut}', ['as' => 'profesores/persona', 'uses' => 'PersonaController@getRol']);
 		Route::get('profesores_asignado', ['as' => 'profesores_asignado', 'uses' => 'CursoController@getProfesores']);
 		Route::get('cursos_disponibles', ['as' => 'cursos_disponibles', 'uses' => 'CursoController@getCursoDisponible']);
 		Route::get('cursos_disponibles_profesores/{per_rut}', ['as' => 'cursos_disponibles_profesores', 'uses' => 'CursoController@getCursoDisponibleProfesor']);
 		Route::get('persona_rol/{per_rut}/{cur_codigo}', ['as' => 'persona_rol', 'uses' => 'PersonaController@getPersonaRol']);
+		Route::get('cursos_mostrar/{per_rut}', ['as' => 'cursos_mostrar', 'uses' => 'VerNotasController@cursos_mostrar']);
+		Route::get('alumnos_mostrar/{per_rut}/{cur_codigo}', ['as' => 'alumnos_mostrar', 'uses' => 'VerNotasController@alumnos_mostrar']);
+		Route::get('notas_mostrar/{idusuario}/{per_rut}/{cur_codigo}', ['as' => 'notas_mostrar', 'uses' => 'VerNotasController@notas_mostrar']);
 		
 		Route::get('alumno_matriculado/{per_rut}', ['as' => 'alumno_matriculado', 'uses' => 'AlumnoController@getAlumno']);
 		Route::get('alumno_administrador/{per_rut}', ['as' => 'alumno_administrador', 'uses' => 'AlumnoController@getAlumno']);
 		Route::get('alumno_apoderado/{per_rut}', ['as' => 'alumno_apoderado', 'uses' => 'ApoderadoController@getApoderado_alumno']);
 		Route::get('apoderado/{per_rut}', ['as' => 'alumno_apoderado', 'uses' => 'ApoderadoController@getApoderado']);
 		Route::get('validar_curso/{cur_numero}/{cur_letra}/{niv_codigo}', ['as' => 'validar_curso', 'uses' => 'CursoController@getCurso']);
+		Route::post('export_pdf/{per_rut}', ['as' => 'export_pdf', 'uses' => 'ExportPDFController@ExportPDF']);
+		Route::get('validar_email/{e_mail}/{per_rut}', ['as' => 'validar_email', 'uses' => 'PersonaController@ValidarEmail']);
+		Route::get('export_pdf/{per_rut}', ['as' => 'export_pdf', 'uses' => 'ExportPDFController@ExportPDF']);
+		
+		
+		
 	});
 
 

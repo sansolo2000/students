@@ -1,3 +1,42 @@
+function precise_round(num, decimals) {
+    var parts = num;
+    var hasMinus = parts.length > 0 && parts[0].length > 0 && parts[0].charAt(0) == '-';
+    var integralPart = parts.length == 0 ? '0' : (hasMinus ? parts[0].substr(1) : parts[0]);
+    var decimalPart = parts.length > 1 ? parts[1] : '';
+    if (decimalPart.length > decimals) {
+        var roundOffNumber = decimalPart.charAt(decimals);
+        decimalPart = decimalPart.substr(0, decimals);
+        if ('56789'.indexOf(roundOffNumber) > -1) {
+            var numbers = integralPart + decimalPart;
+            var i = numbers.length;
+            var trailingZeroes = '';
+            var justOneAndTrailingZeroes = true;
+            do {
+                i--;
+                var roundedNumber = '1234567890'.charAt(parseInt(numbers.charAt(i)));
+                if (roundedNumber === '0') {
+                    trailingZeroes += '0';
+                } else {
+                    numbers = numbers.substr(0, i) + roundedNumber + trailingZeroes;
+                    justOneAndTrailingZeroes = false;
+                    break;
+                }
+            } while (i > 0);
+            if (justOneAndTrailingZeroes) {
+                numbers = '1' + trailingZeroes;
+            }
+            integralPart = numbers.substr(0, numbers.length - decimals);
+            decimalPart = numbers.substr(numbers.length - decimals);
+        }
+    } else {
+        for (var i = decimalPart.length; i < decimals; i++) {
+            decimalPart += '0';
+        }
+    }
+    return (hasMinus ? '-' : '') + integralPart + (decimals > 0 ? '.' + decimalPart : '');
+}
+
+
 function removeOptions(selectbox)
 {
     var i;
@@ -122,6 +161,23 @@ $(document).ready(function() {
 		            //}
 		        });
 				console.log('prueba');
+			}
+		});
+	$('#per_rut_pro').Rut({
+		  on_error: function(){ 
+			  BootstrapDialog.alert({
+		            title: 'Error',
+		            message: 'El RUN ingresado es incorrecto!!',
+		            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+		            closable: true, // <-- Default value is false
+		            draggable: true, // <-- Default value is false
+		            buttonLabel: 'Volver', // <-- Default value is 'OK',
+		            //callback: function(result) {
+		                // result will be true if button was click, while it will be false if users close the dialog directly.
+		                //alert('Result is: ' + result);
+		            //}
+		        });
+				console.log('Rut');
 			}
 		});
 

@@ -1,0 +1,178 @@
+body {
+  position: relative;
+  width: 18cm;  
+  height: 29.7cm; 
+  margin: 0 auto; 
+  color: #001028;
+  background: #FFFFFF; 
+  font-family: Arial, sans-serif; 
+  font-size: 12px; 
+  font-family: Arial;
+}
+
+header {
+  padding: 10px 0;
+  margin-bottom: 30px;
+}
+
+.row {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+#logo {
+  text-align: left;
+  margin-bottom: 10px;
+  width: 20%;
+  position: absolute;
+}
+
+#logo img {
+  width: 50px;
+}
+
+.firma {
+	position:absolute;
+	bottom:70px;
+	width:100%;
+}
+
+.cabezara {
+	position:absolute;
+	top:10px;
+	width:100%;
+}
+
+.cuerpo {
+	position:absolute;
+	top:150px;
+	width:100%;
+}
+
+
+h2 {
+  color: #5D6975;
+  line-height: 1.4em;
+  font-weight: normal;
+  text-align: center;
+}
+
+#project {
+}
+
+#project span {
+  color: #5D6975;
+  text-align: right;
+  display: inline-block;
+  font-size: 1em;
+}
+
+#company {
+  float: right;
+  text-align: right;
+}
+
+#project div,
+#company div {
+  white-space: nowrap;        
+}
+
+
+table.firmante {
+  	width: 30%;
+  	border-collapse: collapse;
+  	border-spacing: 0;
+  	margin: 0 auto;
+  	
+}
+
+table.firmante td {
+	font-family:Arial, sans-serif;font-size:14px;
+	padding:3px 10px;
+	text-align: center;
+}
+
+.linea_firma{
+	border-top: 1px solid  #000000;
+}
+
+table.identificacion {
+  	width: 100%;
+  	border-collapse: collapse;
+  	border-spacing: 0;
+	border: 1px solid  #000000;
+}
+
+table.identificacion td {
+	font-family:Arial, sans-serif;font-size:14px;
+	padding:3px 10px;
+}
+
+
+.titulo {
+	font-weight:bold;
+	font-size:22px;
+	text-align:right;
+	vertical-align:top;	
+}
+
+
+table.encabezado {
+	color: #5D6975;
+	font-size: 2.4em;
+	line-height: 1.4em;
+	font-weight: normal;
+	text-align: center;  	
+	width: 100%;
+  	border-collapse: collapse;
+  	border-spacing: 0;
+}
+
+
+
+table.encabezado td.arriba{
+	border-top: 1px solid #000000;
+}
+
+table.encabezado td.abajo{
+	border-bottom: 1px solid #000000;
+}
+
+
+
+
+
+table.calificaciones {
+  	width: 100%;
+	font-size:9px;
+  	border-collapse: collapse;
+  	border-spacing: 0;
+	border-style:solid;
+	border: 1px;
+}
+
+table.calificaciones th {
+	border: 2px solid #000000;
+}
+
+table.calificaciones td {
+	border: 1px solid #000000;
+}
+
+table.calificaciones td.grueso{
+	border-top: 1px solid #000000;
+	border-right: 2px solid #000000;
+	border-bottom: 1px solid #000000;
+	border-left: 2px solid #000000;
+}
+
+footer {
+  color: #5D6975;
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  bottom: 0;
+  border-top: 1px solid #C1CED9;
+  padding: 8px 0;
+  text-align: center;
+}

@@ -34,6 +34,38 @@ else {
 		$("#per_rut_alu").focus();
 	});		
 	$(document).ready(function() {
+		$('#per_email').change(function(event){
+			per_rut = per_rut_alu.value;
+			if (per_rut.length == 0){
+				$('#per_email').val('');
+				$('#per_rut_alu').focus();
+				BootstrapDialog.alert({
+					title: 'Error',
+					message: 'El Run debe ser ingresado primero',
+					type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+					closable: true, // <-- Default value is false
+					draggable: true, // <-- Default value is false
+					buttonLabel: 'Volver', // <-- Default value is 'OK',
+				});
+			}
+			else{
+				$.get('../../validar_email/'+event.target.value+'/'+per_rut, function(response,state){
+					console.log(response);
+					if (response > 0){
+						console.log(response[0]);
+						BootstrapDialog.alert({
+							title: 'Error',
+							message: 'El E-Mail esta ingresado por otro usuario',
+							type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+							closable: true, // <-- Default value is false
+							draggable: true, // <-- Default value is false
+							buttonLabel: 'Volver', // <-- Default value is 'OK',
+						});
+						$('#per_email').val('');			
+					}
+				});
+			}
+		});
 		$("#per_rut_alu").change(function(event){
 			$.get("../../alumno_matriculado/"+event.target.value+"", function(response,state){
 				if (response.length > 0){

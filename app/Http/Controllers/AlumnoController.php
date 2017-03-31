@@ -475,7 +475,7 @@ class AlumnoController extends Controller
 					foreach ($alumnos as $key => $alumno) {
 						$rut = util::format_rut($alumno->per_rut, $alumno->per_dv);
 						$data[] = array('Numero'			=> $alumno->alu_numero,
-										'Rut' 				=> $rut['numero'].'-'.$rut['dv'], 
+										'Run' 				=> $rut['numero'].'-'.$rut['dv'], 
 										'Primer Nombre' 	=> $alumno->per_nombre,
 										'Segundo Nombre' 	=> $alumno->per_nombre_segundo,
 										'Apellido Paterno' 	=> $alumno->per_apellido_paterno, 
@@ -532,7 +532,7 @@ class AlumnoController extends Controller
 			Excel::create($curso->name.' - Alumno', function($excel) use($alumnos, $curso) {
 				$excel->sheet($curso->name, function($sheet) use ($curso){
 					$data[] = array('Numero'			=> '',
-							'Rut' 				=> '',
+							'Run' 				=> '',
 							'Primer Nombre' 	=> '',
 							'Segundo Nombre' 	=> '',
 							'Apellido Paterno' 	=> '',
@@ -594,15 +594,13 @@ class AlumnoController extends Controller
 			$path = Input::file('import_file')->getRealPath();
 			$data = Excel::load($path, function($reader) {
 			})->noHeading()->toarray();
-			if ($data[4][0] == 'Numero' && $data[4][1] == 'Rut' &&
+			if ($data[4][0] == 'Numero' && $data[4][1] == 'Run' &&
 				$data[4][2] == 'Primer Nombre' && $data[4][3] == 'Segundo Nombre' &&
 				$data[4][4] == 'Apellido Paterno' && $data[4][5] == 'Apellido Materno' &&
 				$data[4][6] == 'E-Mail')
 							
 				
 			{
-				
-						
 				$persona = new persona();
 				$persona_old = new persona();
 				$persona_upd = new persona();
@@ -618,10 +616,54 @@ class AlumnoController extends Controller
 				if(!empty($data) && count($data) > 0){
 					foreach ($data as $key => $value) {
 						if ($key > 4){
+							$validar = true;
 							$rut = util::format_rut($value[1]);
 							if (isset($value[1])){
 								$cantidad = Persona::where('per_rut', '=', $rut['numero'])->count();
 								if ($cantidad == 0){
+									if ($value[6] != ''){
+										if (filter_var($value[6], FILTER_VALIDATE_EMAIL)) {
+											if (empty($email_array[$value[6]])){
+												$email_array[$value[6]] = 1;
+											}
+											else {
+												$value[6] = '';
+												if (!isset($errores)){
+													$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+												}
+												else{
+													$errores = $errores.'\n';
+												}
+												$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario';
+												$validar = false;
+											}
+											if ($validar){
+												$email = persona::where('per_email', '=', $value[6])
+													->where('per_rut', '!=', $rut['numero'])
+													->count();
+												if ($email > 0){
+													$value[6] = '';
+													if (!isset($errores)){
+														$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+													}
+													else{
+														$errores = $errores.'\n';
+													}
+													$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario\n';
+												}
+											}
+										}
+										else{
+											$value[6] = '';
+											if (!isset($errores)){
+												$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+											}
+											else{
+												$errores = $errores.'\n';
+											}
+											$errores = $errores.'El e-mail no es valido para el run: '.$value[1].'\n';
+										}
+									}
 									$persona_new[] = [	
 											'per_rut' 				=> $rut['numero'],
 											'per_dv' 				=> $rut['dv'],
@@ -653,6 +695,51 @@ class AlumnoController extends Controller
 											->where('personas.per_rut', '=', $rut['numero'])
 											->select('personas.per_rut')
 											->get();
+										if ($value[6] != ''){
+											if ($value[6] != ''){
+												if (filter_var($value[6], FILTER_VALIDATE_EMAIL)) {
+													if (empty($email_array[$value[6]])){
+														$email_array[$value[6]] = 1;
+													}
+													else {
+														$value[6] = '';
+														if (!isset($errores)){
+															$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+														}
+														else{
+															$errores = $errores.'\n';
+														}
+														$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario';
+														$validar = false;
+													}
+													if ($validar){
+														$email = persona::where('per_email', '=', $value[6])
+														->where('per_rut', '!=', $rut['numero'])
+														->count();
+														if ($email > 0){
+															$value[6] = '';
+															if (!isset($errores)){
+																$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+															}
+															else{
+																$errores = $errores.'\n';
+															}
+															$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario';
+														}
+													}
+												}
+												else{
+													$value[6] = '';
+													if (!isset($errores)){
+														$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+													}
+													else{
+														$errores = $errores.'\n';
+													}
+													$errores = $errores.'El e-mail no es valido para el run: '.$value[1].'\n';
+												}
+											}
+										}
 										if ($persona_upd->count()==1){
 											$persona_upd = Persona::where('personas.per_rut', '=', $rut['numero'])->first();
 											$persona_upd->per_nombre			= $value[2];
@@ -664,7 +751,7 @@ class AlumnoController extends Controller
 										}
 										else {
 											if (!isset($errores)){
-												$errores = 'Los siguientes Rut no fueron ingresados:\n';
+												$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
 											}
 											else{
 												$errores = $errores . '\n';
@@ -678,13 +765,13 @@ class AlumnoController extends Controller
 																->get();
 											$existe = $revisar->toArray();
 											if (isset($revisar[0]['profesor'])){
-												$errores = $errores.'rut: '.$value[1].' fue ingresado como profesor'; 
+												$errores = $errores.'run: '.$value[1].' fue ingresado como profesor'; 
 											}
 											if (isset($revisar[0]['apoderado'])){
-												$errores = $errores.'rut: '.$value[1].' fue ingresado como apoderado'; 
+												$errores = $errores.'run: '.$value[1].' fue ingresado como apoderado'; 
 											}
 											if (isset($revisar[0]['alumno'])){
-												$errores = $errores.'rut: '.$value[1].' fue ingresado en otro curso'; 
+												$errores = $errores.'run: '.$value[1].' fue ingresado en otro curso'; 
 											}
 										}
 									}
@@ -736,7 +823,7 @@ class AlumnoController extends Controller
 				}
 			}		
 			else {
-				$errores = 'La primera columna debe contener: "numero", "rut", "nombre", "paterno", "materno", "email"'; 
+				$errores = 'La primera columna debe contener: "numero", "run", "nombre", "paterno", "materno", "email"'; 
 			}
 		}
 		else {

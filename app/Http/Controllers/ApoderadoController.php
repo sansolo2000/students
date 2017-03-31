@@ -385,7 +385,7 @@ class ApoderadoController extends Controller
 						->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
 						->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
 						->where('cursos.cur_codigo', '=', $id)
-						->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
+						->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, " ", niveles.niv_nombre) as namecurso'), DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
 						->first();
 		$personas = DB::table('alumnos as al')
 						->join('personas AS pa', DB::raw('pa.per_rut'), '=', DB::raw('al.per_rut'))
@@ -428,7 +428,7 @@ class ApoderadoController extends Controller
 						
 					//descripción de curso 
 					$sheet->row(2, array(
-							'','Curso: ', $curso->name
+							'','Curso: ', $curso->namecurso
 					));						
 					$sheet->row(3, array(
 							'','Profesor: ', $curso->profesor
@@ -536,84 +536,197 @@ class ApoderadoController extends Controller
 				$path = Input::file('import_file')->getRealPath();
 				$data = Excel::load($path, function($reader) {
 				})->noHeading()->toarray();
-				if ($data[5][0] == 'Numero' && $data[5][1] == 'Rut Alumno' && 
-					$data[5][2] == 'Nombre Alumno' && $data[5][3] == 'Apellido Alumno' &&
-					$data[5][4] == 'Rut Apoderado' && $data[5][5] == 'Nombre Apoderado' &&
-					$data[5][6] == 'Apellido Paterno Apoderado' && $data[5][7] == 'Apellido Materno Apoderado' &&
-					$data[5][8] == 'E-Mail Apoderado' && $data[5][9] == 'Fono Apoderado')
-				{
-					if(!empty($data) && count($data) > 0){
-						foreach ($data as $key => $value) {
-							if ($key >= 6){
-								if (isset($value[1]) || isset($value[4])){
-									$rut_alu = util::format_rut($value[1]);
-									//if ()
-									$rut_apo = util::format_rut($value[4]);
-									//Rut Alumno
-									
-									$cantidad = Persona::where('per_rut', '=', $rut_apo['numero'])->count();
-									if ($cantidad == 0){
-										$persona = new persona();
-										$persona->per_rut 				= $rut_apo['numero'];
-										$persona->per_dv 				= $rut_apo['dv'];
-										$persona->per_nombre 			= $value[5];
-										$persona->per_apellido_paterno 	= $value[6];
-										$persona->per_apellido_materno 	= $value[7];
-										$persona->per_email				= $value[8];
-										$persona->save();
-										$apoderado = new apoderado();
-										$apoderado->per_rut  = $rut_apo['numero'];
-										$apoderado->apo_fono = $value[9];
-										$apoderado->save();
-										$id_apoderado = $apoderado->apo_codigo;
+				$curso = Curso::join('niveles', 'niveles.niv_codigo', '=', 'cursos.niv_codigo')
+				->join('profesores', 'profesores.pro_codigo', '=', 'cursos.pro_codigo')
+				->join('personas', 'personas.per_rut', '=', 'profesores.per_rut')
+				->where('cursos.cur_codigo', '=', $input['cur_codigo'])
+				->select('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, "_", niveles.niv_nombre) as name'),DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, " ", niveles.niv_nombre) as namecurso'), DB::raw('CONCAT(personas.per_rut, "-", personas.per_dv, " : ",personas.per_nombre, " ", personas.per_nombre_segundo, " ", personas.per_apellido_paterno, " ", personas.per_apellido_materno) as profesor'))
+				->first();
+				if ($data[1][2] == $curso->namecurso){
+					if ($data[5][0] == 'Numero' && $data[5][1] == 'Rut Alumno' && 
+						$data[5][2] == 'Nombre Alumno' && $data[5][3] == 'Apellido Alumno' &&
+						$data[5][4] == 'Rut Apoderado' && $data[5][5] == 'Nombre Apoderado' &&
+						$data[5][6] == 'Apellido Paterno Apoderado' && $data[5][7] == 'Apellido Materno Apoderado' &&
+						$data[5][8] == 'E-Mail Apoderado' && $data[5][9] == 'Fono Apoderado')
+					{
+						if(!empty($data) && count($data) > 0){
+							foreach ($data as $key => $value) {
+								if ($key >= 6){
+									$validar = true;
+									if (isset($value[1]) || isset($value[4])){
+										$rut_alu = util::format_rut($value[1]);
+										//if ()
+										$rut_apo = util::format_rut($value[4]);
+										//Rut Alumno
+										$alumno = alumno::join('cursos', 'cursos.cur_codigo', '=', 'alumnos.cur_codigo')
+														->where('alumnos.per_rut', '=', $rut_alu['numero'])
+														->where('cursos.cur_codigo', '=', $input['cur_codigo'])
+														->count();
+										if ($alumno > 0){
+											$cantidad = Persona::where('per_rut', '=', $rut_apo['numero'])->count();
+											if ($cantidad == 0){
+												$persona = new persona();
+												$persona->per_rut 				= $rut_apo['numero'];
+												$persona->per_dv 				= $rut_apo['dv'];
+												$persona->per_nombre 			= $value[5];
+												$persona->per_apellido_paterno 	= $value[6];
+												$persona->per_apellido_materno 	= $value[7];
+												if ($value[8] != ''){
+													if (filter_var($value[8], FILTER_VALIDATE_EMAIL)) {
+														if (empty($email_array[$value[8]])){
+															$email_array[$value[8]] = 1;
+														}
+														else {
+															$value[8] = '';
+															if (!isset($errores)){
+																$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+															}
+															else{
+																$errores = $errores.'\n';
+															}
+															$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario';
+															$validar = false;
+														}
+														if ($validar){
+															$email = persona::where('per_email', '=', $value[8])
+															->where('per_rut', '!=', $rut_apo['numero'])
+															->count();
+															if ($email > 0){
+																$value[8] = '';
+																if (!isset($errores)){
+																	$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+																}
+																else{
+																	$errores = $errores.'\n';
+																}
+																$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario\n';
+															}
+														}
+													}
+													else{
+														$value[8] = '';
+														if (!isset($errores)){
+															$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+														}
+														else{
+															$errores = $errores.'\n';
+														}
+														$errores = $errores.'El e-mail no es valido para el run: '.$value[1].'\n';
+													}
+												}
+												$persona->per_email				= $value[8];
+												$persona->per_password			= Hash::make(substr($rut_apo['numero'], strlen($rut_apo['numero'])-5, strlen($rut_apo['numero'])));
+												$persona->save();
+												$apoderado = new apoderado();
+												$apoderado->per_rut  = $rut_apo['numero'];
+												$apoderado->apo_fono = $value[9];
+												$apoderado->save();
+												$id_apoderado = $apoderado->apo_codigo;
+											}
+											else {
+												$persona_upd = new persona();
+												$persona_upd = Persona::where('personas.per_rut', '=', $rut_apo['numero'])->first();
+												$persona_upd->per_nombre			= $value[5];
+												$persona_upd->per_apellido_paterno 	= $value[6];
+												$persona_upd->per_apellido_materno 	= $value[7];
+												//$persona_upd->per_password			= Hash::make(substr($rut_apo['numero'], strlen($rut_apo['numero'])-5, strlen($rut_apo['numero'])));
+												if ($value[8] != ''){
+													if (filter_var($value[8], FILTER_VALIDATE_EMAIL)) {
+														if (empty($email_array[$value[8]])){
+															$email_array[$value[8]] = 1;
+														}
+														else {
+															$value[8] = '';
+															if (!isset($errores)){
+																$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+															}
+															else{
+																$errores = $errores.'\n';
+															}
+															$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario';
+															$validar = false;
+														}
+														if ($validar){
+															$email = persona::where('per_email', '=', $value[8])
+															->where('per_rut', '!=', $rut_apo['numero'])
+															->count();
+															if ($email > 0){
+																$value[8] = '';
+																if (!isset($errores)){
+																	$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+																}
+																else{
+																	$errores = $errores.'\n';
+																}
+																$errores = $errores.'El e-mail no fue cargador para el run: '.$value[1].', porque pertenece a otro usuario\n';
+															}
+														}
+													}
+													else{
+														$value[8] = '';
+														if (!isset($errores)){
+															$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+														}
+														else{
+															$errores = $errores.'\n';
+														}
+														$errores = $errores.'El e-mail no es valido para el run: '.$value[1].'\n';
+													}
+												}
+												$persona_upd->per_email				= $value[8];
+												$persona_upd->save();
+												$apoderado_upd = new apoderado();
+												$apoderado_upd = Apoderado::where('apoderados.per_rut', '=', $rut_apo['numero'])->first();
+												$apoderado_upd->apo_fono				= $value[9];
+												$apoderado_upd->save();
+												$id_apoderado = $apoderado_upd->apo_codigo;
+											}
+												
+											$rol = new rol;
+											$rol = Rol::where('rol_nombre', '=', 'Apoderado')->first();
+											
+											$cantidad = asignacion::where('per_rut', '=', $rut_apo['numero'])->where('rol_codigo', '=', $rol->rol_codigo)->count();
+											if ($cantidad == 0){
+												$asignacion = new asignacion();
+												$asignacion->rol_codigo = $rol->rol_codigo;
+												$asignacion->per_rut = $rut_apo['numero'];
+												$asignacion->save();
+											}
+											$alumno = Alumno::where('alumnos.per_rut', '=', $rut_alu['numero'])->first();
+												
+											$cantidad = apoderado_alumno::where('apo_codigo', '=', $id_apoderado)->where('alu_codigo', '=', $alumno->alu_codigo)->count();
+											if ($cantidad == 0){
+												$apoderado_alumno = new apoderado_alumno();
+												$apoderado_alumno->apo_codigo = $apoderado->apo_codigo;
+												$apoderado_alumno->alu_codigo = $alumno->alu_codigo;
+												$apoderado_alumno->save();
+											}
+											unset($persona_new);
+											unset($asignacion_new);
+											unset($apoderado_new);
+											unset($apoderado_alumno_new);
+										}
+										else {
+											if (!isset($errores)){
+												$errores = 'Los siguientes Run no fueron ingresados o no cargaro todos los datos:\n';
+											}
+											else{
+												$errores = $errores.'\n';
+											}
+											$errores = $errores.'El run del alumno: '.$value[1].' no esta ingresado en el curso';
+												
+										}
 									}
-									else {
-										$persona_upd = new persona();
-										$persona_upd = Persona::where('personas.per_rut', '=', $rut_apo['numero'])->first();
-										$persona_upd->per_nombre			= $value[5];
-										$persona_upd->per_apellido_paterno 	= $value[6];
-										$persona_upd->per_apellido_materno 	= $value[7];
-										$persona_upd->per_email				= $value[8];
-										$persona_upd->save();
-										$apoderado_upd = new apoderado();
-										$apoderado_upd = Apoderado::where('apoderados.per_rut', '=', $rut_apo['numero'])->first();
-										$apoderado_upd->apo_fono				= $value[9];
-										$apoderado_upd->save();
-										$id_apoderado = $apoderado_upd->apo_codigo;
-									}
-										
-									$rol = new rol;
-									$rol = Rol::where('rol_nombre', '=', 'Apoderado')->first();
-									
-									$cantidad = asignacion::where('per_rut', '=', $rut_apo['numero'])->where('rol_codigo', '=', $rol->rol_codigo)->count();
-									if ($cantidad == 0){
-										$asignacion = new asignacion();
-										$asignacion->rol_codigo = $rol->rol_codigo;
-										$asignacion->per_rut = $rut_apo['numero'];
-										$asignacion->save();
-									}
-										
-
-									$alumno = Alumno::where('alumnos.per_rut', '=', $rut_alu['numero'])->first();
-										
-									$cantidad = apoderado_alumno::where('apo_codigo', '=', $id_apoderado)->where('alu_codigo', '=', $alumno->alu_codigo)->count();
-									if ($cantidad == 0){
-										$apoderado_alumno = new apoderado_alumno();
-										$apoderado_alumno->apo_codigo = $apoderado->apo_codigo;
-										$apoderado_alumno->alu_codigo = $alumno->alu_codigo;
-										$apoderado_alumno->save();
-									}
-									unset($persona_new);
-									unset($asignacion_new);
-									unset($apoderado_new);
-									unset($apoderado_alumno_new);
 								}
 							}
 						}
 					}
+					else {
+						$errores = 'La primera columna debe contener: "numero", "rut", "nombre", "paterno", "materno", "email"';
+					}
 				}
 				else {
-					$errores = 'La primera columna debe contener: "numero", "rut", "nombre", "paterno", "materno", "email"';
+					$errores = 'El archivo no pertenece al curso';
 				}
 			}
 			else {
@@ -666,18 +779,19 @@ class ApoderadoController extends Controller
 		$persona_alu = new persona;
 		$persona_alu = alumno::join('apoderados_alumnos', 'alumnos.alu_codigo', '=', 'apoderados_alumnos.alu_codigo')
 							->join('apoderados', 'apoderados.apo_codigo', '=', 'apoderados_alumnos.apo_codigo')
-							->select('apoderados.per_rut')
-							->where('alumnos.per_rut', '=', $id)
-							->first();
+							->join('personas', 'apoderados.per_rut', '=', 'personas.per_rut')
+							->select('apoderados.per_rut', 'personas.per_dv')
+							->where('alumnos.per_rut', '=', $id);
+		$persona_find = $persona_alu->count();
 		
-		if (count($persona_alu) == 0){
-			$rut_apo = util::format_rut($input['apo_rut']);
+		if ($persona_find != 0){
+			$persona_alu = $persona_alu->first();
 			$persona = new persona;
 			$persona_new = new persona;
-			$persona = persona::where('personas.per_rut', '=', $rut_apo['numero'])->first();
+			$persona = persona::where('personas.per_rut', '=', $persona_alu->per_rut)->first();
 			if (count($persona) == 0){
-				$persona_new->per_rut = $rut_apo['numero'];
-				$persona_new->per_dv = $rut_apo['dv'];
+				$persona_new->per_rut = $persona_alu->per_rut;
+				$persona_new->per_dv = $persona_alu->per_dv;
 				$persona_new->per_nombre = $input['apo_nombre'];
 				$persona_new->per_apellido_paterno = $input['apo_apellido_paterno'];
 				$persona_new->per_apellido_materno = $input['apo_apellido_materno'];
@@ -689,9 +803,22 @@ class ApoderadoController extends Controller
 				}
 				$persona_new->save();
 			}
+			else{
+				$persona = Persona::find($persona_alu->per_rut);
+				$persona->per_nombre = $input['apo_nombre'];
+				$persona->per_apellido_paterno = $input['apo_apellido_paterno'];
+				$persona->per_apellido_materno = $input['apo_apellido_materno'];
+				if (isset($input['dat_password'])){
+					$persona->per_password = Hash::make($input['apo_password']);
+				}
+				if (isset($input['dat_adicionales'])){
+					$persona->per_email = $input['apo_email'];
+				}
+				$persona->save();
+			}
 			$asignacion = new asignacion();
 			$asignacion_new = new asignacion();
-			$asignacion = asignacion::where('asignaciones.per_rut', '=', $rut_apo['numero'])->first();
+			$asignacion = asignacion::where('asignaciones.per_rut', '=', $persona_alu->per_rut)->first();
 			if (count($asignacion) == 0){
 				$rol = new rol();
 				$rol = rol::where('roles.rol_nombre', '=', 'Apoderado')->first();
@@ -701,7 +828,7 @@ class ApoderadoController extends Controller
 			}
 			$apoderado = new apoderado();
 			$apoderado_new = new apoderado();
-			$apoderado = Apoderado::where('apoderados.per_rut', '=', $rut_apo['numero'])->first();
+			$apoderado = Apoderado::where('apoderados.per_rut', '=', $persona_alu->per_rut)->first();
 			if (count($apoderado) == 0){
 				$apoderado_new->apo_fono  	= $input['apo_fono'];
 				$apoderado_new->save();
@@ -711,7 +838,7 @@ class ApoderadoController extends Controller
 			$apoderado_alumno = apoderado_alumno::join('apoderados', 'apoderados_alumnos.apo_codigo', '=', 'apoderados.apo_codigo')
 											->join('alumnos', 'apoderados_alumnos.alu_codigo', '=', 'alumnos.alu_codigo')
 											->where('alumnos.per_rut', '=', $id)
-											->where('apoderados.per_rut', '=', $rut_apo['numero'])
+											->where('apoderados.per_rut', '=', $persona_alu->per_rut)
 											->first();
 			if (count($apoderado_alumno) == 0){
 				$alumno = new alumno();
