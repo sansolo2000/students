@@ -35,28 +35,6 @@ else {
 @section('content')
 {!! Html::script('assets/js/jquery-validate.bootstrap-tooltip.js') !!}
 
-<script type="text/javascript">
-	$(document).ready(function(){
-	// Demo 1
-	$('#inputRut').Rut({
-	  on_error: function(){ 
-		  BootstrapDialog.alert({
-	            title: 'Error',
-	            message: 'El RUN ingresado es incorrecto!!',
-	            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-	            closable: true, // <-- Default value is false
-	            draggable: true, // <-- Default value is false
-	            buttonLabel: 'Volver', // <-- Default value is 'OK',
-	            //callback: function(result) {
-	                // result will be true if button was click, while it will be false if users close the dialog directly.
-	                //alert('Result is: ' + result);
-	            //}
-	        });
-		}
-	});
-
-	});
-</script>
 	<script type="text/javascript">
 		$().ready(function () {
 			$('#form_login').validate({ 
@@ -102,9 +80,8 @@ else {
 			    </div>
 			    <div class="panel-body">
 					<div class="col-md-12">
-					    <form id="form_login" class="form-horizontal" method="POST" action="../enviarcorreo">
+					    <form id="form_login" class="form-horizontal" method="POST" action="enviarcorreo">
 					      <fieldset>
-							{{ Form::hidden('numero', $numero) }}
 							{{ csrf_field() }}
 					        <div class="form-group">
 					          <label for="inputEMail" class="col-md-3 control-label">E-Mail:</label>

@@ -8,7 +8,7 @@ use App\models\persona;
 
 
 class navegador{
-	public static function crear_menu( $rut ){
+	public static function crear_menu( $rut, $enable = true ){
 		$opciones = DB::table('asignaciones')
 		->join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')
 		->join('modulos_asignados', 'roles.rol_codigo', '=', 'modulos_asignados.rol_codigo')
@@ -21,36 +21,40 @@ class navegador{
 		->where('modulos.mod_activo', '=', 1)
 		->select('aplicaciones.apl_descripcion', 'modulos.mod_nombre', 'modulos.mod_url')
 		->orderBy('apl_orden', 'ASC')
-		->orderBy('mod_orden', 'ASC')
-		->get();
+		->orderBy('mod_orden', 'ASC');
+//		$consulta = $opciones->tosql();
+//		util::print_a($consulta,0);
+		$opciones = $opciones->get();
 		$persona = persona::join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
 						->join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')
 						->where('personas.per_rut', '=', $rut)
 						->first();
 		$menu = '<ul class="nav navbar-nav">';
 		$aplicacion = '';
-		foreach ($opciones as $opcion){
-			if ($aplicacion != $opcion->apl_descripcion){
-				if ($aplicacion != ''){
-					$menu .= '</ul>';
+		if ($enable){
+			foreach ($opciones as $opcion){
+				if ($aplicacion != $opcion->apl_descripcion){
+					if ($aplicacion != ''){
+						$menu .= '</ul>';
+						$menu .= '</li>';
+					}
+					$aplicacion = $opcion->apl_descripcion;
+					$menu .= '<li class="dropdown">';
+					$menu .= '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'.$aplicacion.'<span class="caret"></span></a>';
+					$menu .= '<ul class="dropdown-menu" role="menu">';
+				}
+				if ($opcion->mod_nombre == '**---**'){
+					$menu .= '<li class="divider"></li>';
+				}	
+				else {
+					$menu .= '<li>';
+					$menu .= '<a href="/'.util::obtener_url().$opcion->mod_url.'">'.$opcion->mod_nombre.'</a>';
 					$menu .= '</li>';
 				}
-				$aplicacion = $opcion->apl_descripcion;
-				$menu .= '<li class="dropdown">';
-				$menu .= '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'.$aplicacion.'<span class="caret"></span></a>';
-				$menu .= '<ul class="dropdown-menu" role="menu">';
 			}
-			if ($opcion->mod_nombre == '**---**'){
-				$menu .= '<li class="divider"></li>';
-			}	
-			else {
-				$menu .= '<li>';
-				$menu .= '<a href="/'.util::obtener_url().$opcion->mod_url.'">'.$opcion->mod_nombre.'</a>';
-				$menu .= '</li>';
-			}
+			$menu .= '</ul>';
+			$menu .= '</li>';
 		}
-		$menu .= '</ul>';
-		$menu .= '</li>';
 		$menu .= '</ul>';
 		$menu .= '<ul class="nav navbar-nav navbar-right">';
 		$menu .= '<li class="dropdown">';
@@ -69,18 +73,21 @@ class navegador{
 		$menu .= '<li style="padding-left:20px;">';
 		$menu .= $persona->rol_nombre;
 		$menu .= '</li>';
+		$ruta = '';
+		if (!$enable){
+			$ruta = '../';
+		}
+		$menu .= '<li class="divider"></li>';
+		$menu .= '<li style="padding-left:10px;">';
+		$menu .= '<a href="'.$ruta.'cambiopassword">Cambiar Password</a>';
+		$menu .= '</li>';
 		$menu .= '<li class="divider"></li>';
 		$menu .= '<li>';
-		$value = Session::get('origen');
-        if ($value == 1){
-			$menu .= '<a href="logout">Salir</a>';
-    	}
-        if ($value == 2){
-			$menu .= '<a href="admin">Salir</a>';
-    	}		
+		$menu .= '<a href="'.$ruta.'logout">Salir</a>';
 		$menu .= '</li>';
 		$menu .= '</ul>';
 		$menu .= '</li>';
+		
 		$menu .= '</ul>';		
 		return $menu;	
 	}

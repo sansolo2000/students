@@ -37,33 +37,16 @@ class VerNotasController extends Controller
 	
 	public function index($id = NULL)
 	{
-		// Menu
-	
 		$idusuario = Auth::user()->per_rut;
 		$menu = navegador::crear_menu($idusuario);
 		$cantidad = 0;
-
-		//Privilegios
-		
 		$privilegios = navegador::privilegios($idusuario, $this->Privilegio_modulo);
 		$privilegio = $privilegios[0];
 		if ($privilegio->mas_read == 0){
 			return redirect()->route('logout');
 		}
 		else{
-			// Descripcion de tabla.
-//			$cursos = VerNotasController::cursos($idusuario, $roles);
 			$tabla = '';
-				
-//			foreach ($cursos as $curso){
-			//				$tabla .= '<tr>';
-			//				$tabla .= '<td>'.$curso->name.'</td>';
-			//				$control = VerNotasController::asignaturas_curso($curso->cur_codigo, $persona);
-			//				$tabla .= '<td>'.$control.'</td>';
-			//				$tabla .= '<td>Column content</td>';
-			//				$tabla .= '</tr>';
-			//			}
-			
 			$ubicacion = 1;
 			$periodos = periodo::join('anyos', 'periodos.any_codigo', '=', 'anyos.any_codigo')
 								->where('anyos.any_activo', '=', 1)
@@ -77,30 +60,18 @@ class VerNotasController extends Controller
 								->orderBy('periodos.pri_orden', 'ASC')
 					 			->lists('pri_nombre', 'pri_codigo')
 					 			->toArray();
- 			
- 			
- 			
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url(), 'pk' => 'cur_codigo', 'clase' => 'container col-md-12', 'col' => 5);
 			return view('main.vernotas')
 					->with('menu', $menu)
 					->with('id_usuario', $idusuario)
 					->with('cur_codigo', $this->cur_codigo)
 					->with('pri_codigo', $this->pri_codigo)
-//					->with('cantidadnotas', $cantidadnotas)
-//					->with('cantidadperiodo', $cantidadperiodo)
-//					->with('width', $width)
 					->with('periodo', $periodo)
 					->with('user', $idusuario)
-//					->with('profesor', $profesor)
-//					->with('record', $asignaturas)
-//					->with('cabecera', $cabecera)
 					->with('entidad', $entidad)
-//					->with('script', $script)
-//					->with('modal', $modal)
 					->with('errores', $this->errores)
 					->with('CantidadNotas', $cantidad)
 					->with('privilegio', $privilegio);
-					
 		}
 	}
 	
@@ -224,12 +195,10 @@ class VerNotasController extends Controller
 		$result = $this->notas_mostrar_get($idusuario, $per_rut, $idcurso);
 		if ($request->ajax()){
 			return response()->json($result);
-			//exit;
 		}
 		else{
 			return $result;
 		}
-		
 	}
 	
 	public static function notas_mostrar_get($idusuario, $per_rut, $idcurso){
@@ -242,25 +211,36 @@ class VerNotasController extends Controller
 		$cantidadnotas = $cursos->cur_cantidad_notas;
 		$width = floor(80 / ((($cantidadnotas + 1) * $cantidadperiodo) + 1));
 		$width_final = 80 - ($width * (((($cantidadnotas + 1) * $cantidadperiodo) + 1)));
-		
-		$result['columnas'] = array('cantidadperiodo' => $cantidadperiodo, 'cantidadnotas' => $cantidadnotas, 'width' => $width, 'width_final' => $width_final);
+
+		$calificaciones_cantidad = alumno::join('calificaciones', 'calificaciones.alu_codigo', '=', 'alumnos.alu_codigo')
+										->join('asignaturas', 'asignaturas.asg_codigo', '=', 'calificaciones.asg_codigo')
+										->join('periodos', 'periodos.pri_codigo', '=', 'calificaciones.pri_codigo')
+										->where('alumnos.per_rut', '=',$per_rut)
+										->count();
+		if ($calificaciones_cantidad == 0){
+			$ExiteCalificaciones = false;
+		}
+		else{
+			$ExiteCalificaciones = true;
+		}
+		$result['columnas'] = array('cantidadperiodo' => $cantidadperiodo, 'cantidadnotas' => $cantidadnotas, 'width' => $width, 'width_final' => $width_final, 'exitencalificaciones' => $ExiteCalificaciones);
 		
 		$pos = 1;
 		$asignaturas = asignatura::where('cur_codigo', '=', $idcurso)
-		->orderBy('asignaturas.asg_orden', 'ASC')
-		->get();
+									->orderBy('asignaturas.asg_orden', 'ASC')
+									->get();
 		$indasignatura = 0;
 		foreach ($asignaturas as $asignatura){
 			$indperiodo = 0;
 			foreach ($periodos as $periodo){
 				for ($i=1; $i <= $cantidadnotas; $i++){
 					$calificaciones = alumno::join('calificaciones', 'calificaciones.alu_codigo', '=', 'alumnos.alu_codigo')
-					->join('asignaturas', 'asignaturas.asg_codigo', '=', 'calificaciones.asg_codigo')
-					->join('periodos', 'periodos.pri_codigo', '=', 'calificaciones.pri_codigo')
-					->where('asignaturas.asg_codigo', '=', $asignatura->asg_codigo)
-					->where('periodos.pri_codigo', '=', $periodo->pri_codigo)
-					->where('calificaciones.cal_posicion', '=', $i)
-					->where('alumnos.per_rut', '=',$per_rut);
+											->join('asignaturas', 'asignaturas.asg_codigo', '=', 'calificaciones.asg_codigo')
+											->join('periodos', 'periodos.pri_codigo', '=', 'calificaciones.pri_codigo')
+											->where('asignaturas.asg_codigo', '=', $asignatura->asg_codigo)
+											->where('periodos.pri_codigo', '=', $periodo->pri_codigo)
+											->where('calificaciones.cal_posicion', '=', $i)
+											->where('alumnos.per_rut', '=',$per_rut);
 					$calificacionexiste = $calificaciones->count();
 					if ($calificacionexiste == 1){
 						$calificacion = $calificaciones->first();
@@ -283,6 +263,4 @@ class VerNotasController extends Controller
 		}
 		return $result;
 	}
-	
-	//
 }

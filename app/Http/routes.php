@@ -23,17 +23,19 @@ use App\models\roles;
 		Route::get('/', ['as' => '/', 'uses' => 'IndexController@Root']);
 		Route::get('login', ['as' => 'login', 'uses' => 'IndexController@Error_login']);
 		
-		Route::get('admin', ['as' => 'admin', 'uses' => 'IndexController@Admin']);
 	
 		Route::get('auth/login', ['as' => 'auth/login', 'uses' => 'Auth\AuthController@authenticate']);
 		Route::post('auth/login', ['as' => 'auth/login', 'uses' => 'Auth\AuthController@authenticate']);
 		Route::get('logout', ['as' => 'logout', 'uses' => 'IndexController@Root']);
-		Route::get('recordarpassword/{numero}', ['as' => 'recordarpassword', 'uses' => 'RecordarPasswordController@RecordarPassword']);
+		Route::get('recordarpassword', ['as' => 'recordarpassword', 'uses' => 'RecordarPasswordController@RecordarPassword']);
 		Route::post('enviarcorreo', ['as' => 'enviarcorreo', 'uses' => 'RecordarPasswordController@EnviarCorreo']);
 	});
 
 	Route::group(['middleware' => ['web','auth']], function () {
+		Route::get('logs_applications', ['as' => 'main', 'uses' => '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index']);
 		Route::get('main', ['as' => 'main', 'uses' => 'MainController@main']);
+		Route::get('cambiopassword', ['as' => 'cambiopassword', 'uses' => 'CambioPasswordController@index']);
+		Route::post('savepassword', ['as' => 'savepassword', 'uses' => 'CambioPasswordController@save']);
 		Route::resource('regiones', 'RegionController');		
 		Route::resource('roles', 'RolController');		
 		Route::resource('perfiles', 'Modulo_AsignadoController');		

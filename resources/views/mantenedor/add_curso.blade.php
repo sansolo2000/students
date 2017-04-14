@@ -89,13 +89,13 @@ function validar_curso(){
 				'niv_nombre'			:	{required: true, min:1},
 				'any_numero'			:	{required: true, min:1},
 				'pro_nombre'			:	{required: true, min:1},
-				'cur_cantidad_notas'	:	{required: true, number: true, range: [1, 10]},
+				'cur_cantidad_notas'	:	{required: true, number: true, range: [1, 12]},
 			},
 				messages: {
 				'niv_nombre'			: { min: 'Seleccione nivel' },
 				'any_numero'			: { min: 'Seleccione a\u00f1o' },
 				'pro_nombre'			: { min: 'Seleccione profesor' }, 
-				'cur_cantidad_notas'	: {range: 'la cantidad de notas deben ir entre 1 y 10'}	
+				'cur_cantidad_notas'	: {range: 'la cantidad de notas deben ir entre 1 y 12'}	
 			},
 		});
 

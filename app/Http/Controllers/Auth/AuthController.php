@@ -14,6 +14,7 @@ use App\helpers\util;
 use DB;
 use Illuminate\Support\Facades\Hash;
 use Auth;
+use App\models\rol;
 
 class AuthController extends Controller
 {
@@ -90,95 +91,63 @@ class AuthController extends Controller
     public function authenticate()
     {
     	$rut = util::format_rut($_POST['inputRut']);
-    	
-    	
-   
-    	if ($_POST['formulario']=='/'){
-    		Session::put('origen', '1');
-    	}
-    	if ($_POST['formulario']=='admin'){
-    		Session::put('origen', '2');
-    	}
-    	 
     	$registros = persona::join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
 				    	->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
 				    	->where('personas.per_rut', '=', $rut['numero']);
 		$existe= $registros->count();		    	
 		if ($existe!=0) {
-			$existe = $registros->where('roles.rol_codigo', '=', $_POST['selectRol'])->count();
-			if ($existe!=0) {
-				$registro = $registros->first();
-				if($registro->per_activo == 1){				
-		  	    	if (Hash::check($_POST['inputPassword'], $registro->per_password))
-			    	{
-			    		Auth::loginUsingId($rut['numero'], true);
-			    		$persona = persona::find($rut['numero']);
-			    		$persona->per_cantidad_intento = 1;
-			    		$persona->save();
-			    		 return redirect()->route('main');
-			    	}
-			    	else{
-			    		$persona = persona::find($rut['numero']);
-			    		
-			    		if ($persona->per_cantidad_intento < util::intentos()){
-				    		$persona->per_cantidad_intento = $persona->per_cantidad_intento + 1;
-				    		$persona->save();
-			    		}
-			    		else {
-			    			$persona->per_cantidad_intento = $persona->per_cantidad_intento + 1;
-			    			$persona->per_activo = 0;
-			    			$persona->save();
-			    		}
-			    		Session::put('error_session', 'Password');
-			    		if ($_POST['formulario']=='/'){
-			    			return redirect()->route('/');
-			    		}
-			    		if ($_POST['formulario']=='admin'){
-			    			return redirect()->route('admin');
-			    		}
-			    	}
-				}
-				else{
-					Session::put('error_session', 'Intentos');
-					if ($_POST['formulario']=='/'){
-						return redirect()->route('/');
-					}
-					if ($_POST['formulario']=='admin'){
-						return redirect()->route('admin');
-					}
-				}
-			}
-			else {
-				Session::put('error_session', 'Rol');
-				if ($_POST['formulario']=='/'){
-					return redirect()->route('/');
-				}
-				if ($_POST['formulario']=='admin'){
-					return redirect()->route('admin');
-				}
+			$registro = $registros->first();
+  	    	if (Hash::check($_POST['inputPassword'], $registro->per_password))
+	    	{
+	    		if($registro->per_activo == 1){
+	    			$persona = persona::find($rut['numero']);
+	    			$rol = rol::join('asignaciones', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
+	    						->where('asignaciones.per_rut', '=', $persona->per_rut)
+	    						->first();
+					Auth::loginUsingId($rut['numero'], true);
+					$persona->per_cantidad_intento = 1;
+					$persona->save();
+	    			if ($rol->rol_nombre == 'Apoderado'){
+	    				return redirect()->route('ver_notas.index');
+	    			}
+	    			else {
+	    				return redirect()->route('main');
+	    			}
+	    		}
+	   			if ($registro->per_activo == 3){
+	   				Auth::loginUsingId($rut['numero'], true);
+	   					return redirect()->route('cambiopassword');
+	   			}
+	   			if ($registro->per_activo == 0){
+	   				 Session::put('error_session', 'Intentos');
+   					return redirect()->route('/');
+	   			}
+	    	}
+	    	else{
+	    		$persona = persona::find($rut['numero']);
+	    		if ($persona->per_cantidad_intento < util::intentos()){
+		    		$persona->per_cantidad_intento = $persona->per_cantidad_intento + 1;
+		    		$persona->save();
+	    		}
+	    		else {
+	    			$persona->per_cantidad_intento = $persona->per_cantidad_intento + 1;
+	    			$persona->per_activo = 0;
+	    			$persona->save();
+	    		}
+	    		Session::put('error_session', 'Password');
+    			return redirect()->route('/');
 			}
 		}
     	else {
     		Session::put('error_session', 'NoExiste');
-    		if ($_POST['formulario']=='/'){
 				return redirect()->route('/');
-			}
-			if ($_POST['formulario']=='admin'){
-				return redirect()->route('admin');
-			}
     	}
     }    
 
     public function getLogout()
     {
     	Auth::logout();
-    	$value = Session::get('origen');
-        if ($value == 1){
-    		return redirect()->route('/');
-    	}
-        if ($value == 2){
-    		return redirect()->route('admin');
-    	}
+   		return redirect()->route('/');
     }    
     
 }

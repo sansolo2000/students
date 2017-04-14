@@ -36,113 +36,74 @@ else {
 	<script type="text/javascript">
 
 		$(document).ready(function() {
-			var per_rut = $("#hid_per_rut").val();
-			var cur_codigo = $("#hid_cur_codigo").val();
-			
-			$.get("/students/public/cursos_mostrar" + "/" + per_rut, function(response,state){
-				if (response.length == 0){
-					BootstrapDialog.alert({
-						title: 'Error',
-						message: 'No existe curso a mostrar',
-						type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-						closable: true, // <-- Default value is false
-						draggable: true, // <-- Default value is false
-						buttonLabel: 'Volver', // <-- Default value is 'OK',
-					});
-				}
-				else{
-					var profesores = []; 
-					console.log(1);
-					for (i=0; i<response.length; i++){
-						if (cur_codigo == response[i].id){
-							$("#cur_nombre").append("<option value='"+response[i].id+"' selected>"+response[i].name+"</option>");
-						}
-						else{
-							$("#cur_nombre").append("<option value='"+response[i].id+"'>"+response[i].name+"</option>");							
-						}
-					}
-					$("#cur_nombre").select2({
-					});
-				}
-			});
-
-			$("#cur_nombre").change(function(event){
-				removeOptions(document.getElementById("alu_nombre"));
-				if (event.target.value == -1){
-					 $('#btnSub').attr('src','assets/img/pdf_dis.png');
-					 $('#btnSub').prop( "disabled", true );
-					$( ".Grilla" ).empty();	
-				}
-				else{					
-					$.get("/students/public/alumnos_mostrar" + "/" + per_rut + "/" + event.target.value+"", function(response,state){
-						if (response.length == 0){
-							BootstrapDialog.alert({
-								title: 'Error',
-								message: 'No existe alumnos para mostrar',
-								type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-								closable: true, // <-- Default value is false
-								draggable: true, // <-- Default value is false
-								buttonLabel: 'Volver', // <-- Default value is 'OK',
-							});
-							alu_nombre.value=-1;
-							cur_nombre.value=-1;
-						}
-						for (i=0; i<response.length; i++){
-							$("#alu_nombre").append("<option value='"+response[i].id+"'>"+response[i].name+"</option>");							
-						}
-						$("#alu_nombre").select2({
+			function alumno_nombre(vCurCodigo){
+				$.get("/students/public/alumnos_mostrar" + "/" + per_rut + "/" + vCurCodigo+"", function(response,state){
+					if (response.length == 0){
+						BootstrapDialog.alert({
+							title: 'Error',
+							message: 'No existe alumnos para mostrar',
+							type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+							closable: true, // <-- Default value is false
+							draggable: true, // <-- Default value is false
+							buttonLabel: 'Volver', // <-- Default value is 'OK',
 						});
-						if (url == null){
-							var url = '{{ $entidad['controller'] }}';
+						alu_nombre.value=-1;
+						cur_nombre.value=-1;
+					}
+					for (i=0; i<response.length; i++){
+						if (response.length == 2){
+							$("#alu_nombre").append("<option value='"+response[i].id+"' selected>"+response[i].name+"</option>");
 						}
-						$('#btnSub').attr('src',url+'/assets/img/pdf_dis.png');
-						$('#btnSub').prop( "disabled", true );
-						$( ".Grilla" ).empty();	
-						
+						else {
+							$("#alu_nombre").append("<option value='"+response[i].id+"'>"+response[i].name+"</option>");							
+						}								
+					}
+					$("#alu_nombre").select2({
 					});
-				}	
-			});
-
-			$("#alu_nombre").change(function(event){
-				//removeOptions(document.getElementById("alu_nombre"));
-				if (event.target.value == -1){
 					if (url == null){
 						var url = '{{ $entidad['controller'] }}';
 					}
 					$('#btnSub').attr('src',url+'/assets/img/pdf_dis.png');
 					$('#btnSub').prop( "disabled", true );
 					$( ".Grilla" ).empty();	
-				}
-				else{					
-					console.log('1'); 
-					$.get("/students/public/notas_mostrar" + "/" + per_rut + "/" + event.target.value + "/" + cur_nombre.value+"", function(response,state){
-						if (response.length == 0){
-							BootstrapDialog.alert({
-								title: 'Error',
-								message: 'No existe notas de mostrar',
-								type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-								closable: true, // <-- Default value is false
-								draggable: true, // <-- Default value is false
-								buttonLabel: 'Volver', // <-- Default value is 'OK',
-							});
-							alu_nombre.value=-1;
-	
+					if (response.length == 2){
+						$("#alu_nombre").prop( "disabled", true );
+						notas_mostrar(response[1].id);
+					}
+					
+				});
+			}
+
+			function notas_mostrar(vPer_Rut){
+				$.get("/students/public/notas_mostrar" + "/" + per_rut + "/" + vPer_Rut + "/" + cur_nombre.value+"", function(response,state){
+					if (response.length == 0){
+						BootstrapDialog.alert({
+							title: 'Error',
+							message: 'No existe notas de mostrar',
+							type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+							closable: true, // <-- Default value is false
+							draggable: true, // <-- Default value is false
+							buttonLabel: 'Volver', // <-- Default value is 'OK',
+						});
+						alu_nombre.value=-1;
+					}
+					else {
+						$( ".Grilla" ).empty();	
+						if (url == null){
+							var url = '{{ $entidad['controller'] }}';
 						}
-						else {
-							$( ".Grilla" ).empty();	
-							if (url == null){
-								var url = '{{ $entidad['controller'] }}';
-							}
+						cantidadperiodo = response.columnas.cantidadperiodo;
+						cantidadnotas = response.columnas.cantidadnotas;
+						width = response.columnas.width;
+						existencalificaciones = response.columnas.exitencalificaciones;
+						promedio_periodos = [];
+						promedio_asignaturas = [];
+						asignatura = response.notas;
+						if (existencalificaciones){
 							$('#btnSub').attr('src',url+'/assets/img/pdf.png');
 							$('#btnSub').prop( "disabled", false );
-							$('#myform').attr('action', url+'export_pdf/'+event.target.value);
-							console.log(event.target.value);
-							cantidadperiodo = response.columnas.cantidadperiodo;
-							cantidadnotas = response.columnas.cantidadnotas;
-							width = response.columnas.width;
-							promedio_periodos = [];
-							promedio_asignaturas = [];
-							asignatura = response.notas;
+							$('#myform').attr('action', url+'export_pdf/'+vPer_Rut);
+							console.log(2);
 							mostrar = '<div class="container col-md-12">';
 							mostrar += ' <div class="panel panel-primary" >';
 							mostrar += ' 	<div class="panel-heading">';
@@ -260,9 +221,80 @@ else {
 							mostrar += ' 	</div>';
 							mostrar += ' </div>';
 							mostrar += '</div>';
-							$( ".Grilla" ).append( mostrar );	
 						}
+						else{
+							mostrar = '<div class="container col-md-12">';
+							mostrar += ' <div class="panel panel-primary" style="text-align:center">';
+							mostrar += ' 		<h3>No hay notas cargadas</h3>';
+							mostrar += ' </div>';
+							mostrar += '</div>';
+							$('#btnSub').attr('src','assets/img/pdf_dis.png');
+							$('#btnSub').prop( "disabled", true );
+							$( ".Grilla" ).empty();	
+						}	
+						$( ".Grilla" ).append( mostrar );	
+					}
+				});
+			}		
+
+			var per_rut = $("#hid_per_rut").val();
+			var cur_codigo = $("#hid_cur_codigo").val();
+			
+			$.get("/students/public/cursos_mostrar" + "/" + per_rut, function(response,state){
+				if (response.length == 0){
+					BootstrapDialog.alert({
+						title: 'Error',
+						message: 'No existe curso a mostrar',
+						type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+						closable: true, // <-- Default value is false
+						draggable: true, // <-- Default value is false
+						buttonLabel: 'Volver', // <-- Default value is 'OK',
 					});
+				}
+				else{
+					var profesores = []; 
+					for (i=0; i<response.length; i++){
+						if (cur_codigo == response[i].id || response.length == 2){
+							$("#cur_nombre").append("<option value='"+response[i].id+"' selected>"+response[i].name+"</option>");
+						}
+						else{
+							$("#cur_nombre").append("<option value='"+response[i].id+"'>"+response[i].name+"</option>");							
+						}
+					}
+					$("#cur_nombre").select2({
+					});
+					if (response.length == 2){
+						$("#cur_nombre").attr('disabled','disabled');
+						alumno_nombre(response[1].id);	
+					}
+				}
+			});
+
+			$("#cur_nombre").change(function(event){
+				removeOptions(document.getElementById("alu_nombre"));
+				if (event.target.value == -1){
+					$('#btnSub').attr('src','assets/img/pdf_dis.png');
+					$('#btnSub').prop( "disabled", true );
+					$( ".Grilla" ).empty();	
+				}
+				else{					
+					alumno_nombre(event.target.value);	
+				}	
+			});
+
+			$("#alu_nombre").change(function(event){
+				//removeOptions(document.getElementById("alu_nombre"));
+				if (event.target.value == -1){
+					if (url == null){
+						var url = '{{ $entidad['controller'] }}';
+					}
+					console.log('url');
+					$('#btnSub').attr('src',url+'/assets/img/pdf_dis.png');
+					$('#btnSub').prop( "disabled", true );
+					$( ".Grilla" ).empty();	
+				}
+				else{					
+					notas_mostrar(event.target.value);
 				}				
 			});
 		});

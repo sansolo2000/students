@@ -18,12 +18,9 @@ use Session;
 class RecordarPasswordController extends Controller
 {
     //
-    function RecordarPassword($numero){
+    function RecordarPassword(){
 		$url = util::obtener_url_fija();
-		if ($numero == 2){
-			$url = $url.'admin';
-		}
-    	return View::make('recordarpassword', array('numero' => $numero, 'url' => $url));
+    	return View::make('recordarpassword', array('url' => $url));
     }
     function EnviarCorreo(){
     	$input = Input::all();
@@ -47,7 +44,7 @@ class RecordarPasswordController extends Controller
     		$persona_udp = persona::find($persona->per_rut);
     		$persona_udp->per_password = Hash::make($password);
     		$persona_udp->per_cantidad_intento = 0;
-    		$persona_udp->per_activo = 1;
+    		$persona_udp->per_activo = 3;
     		$persona_udp->save();
    		//guarda el valor de los campos enviados desde el form en un array
 			$data = [	'password'	=> $password,
@@ -75,14 +72,7 @@ class RecordarPasswordController extends Controller
 			});
     	}
     	Session::put('error_session', 'email');
-    	switch ($input['numero']){
-			case 1:
-				return redirect()->route('/');
-				break;
-			case 2:
-				return redirect()->route('admin');
-				break;
-		}
+		return redirect()->route('/');
 		
 	}
 }

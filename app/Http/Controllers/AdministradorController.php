@@ -16,6 +16,7 @@ use View;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use Session;
+use DB;
 use App\models\rol;
 
 class AdministradorController extends Controller
@@ -83,10 +84,11 @@ class AdministradorController extends Controller
 				->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
 				->wherein('roles.rol_nombre', array('Administrador', 'Direccion'))
 				->orderBy('personas.per_rut', 'ASC')
+				->select(DB::raw('personas.per_rut as per_rut_adm, per_dv, per_nombre, per_apellido_materno, per_apellido_paterno, per_email, rol_nombre'))
 				->paginate($this->paginate);
 			}
 			else{
-				$personas = Persona::select()
+				$personas = Persona::select(DB::raw('personas.per_rut as per_rut_adm, per_dv, per_nombre, per_apellido_materno, per_apellido_paterno, per_email, rol_nombre'))
 							->join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
 							->join('roles', 'roles.rol_codigo', '=', 'asignaciones.rol_codigo')
 							->wherein('roles.rol_nombre', array('Administrador', 'Direccion'))

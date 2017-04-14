@@ -89,7 +89,7 @@ else {
 										@if ($tabla['filter'] != 3)
 											@if ($tabla['tipo'] == 'input' || $tabla['tipo'] == 'select')
 												<?php 
-													if ($tabla['campo'] == 'per_rut' || $tabla['campo'] == 'per_rut_apo'){
+													if ($tabla['campo'] == 'per_rut' || $tabla['campo'] == 'per_rut_apo' || $tabla['campo'] == 'per_rut_pro' || $tabla['campo'] == 'per_rut_adm'){
 														$mostrar = util::format_rut($record[$tabla['campo']], 'X');
 														$mostrar = $mostrar['numero'].'-'.$mostrar['dv'];
 													}

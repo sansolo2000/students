@@ -616,6 +616,7 @@ class ApoderadoController extends Controller
 												}
 												$persona->per_email				= $value[8];
 												$persona->per_password			= Hash::make(substr($rut_apo['numero'], strlen($rut_apo['numero'])-5, strlen($rut_apo['numero'])));
+												$persona->per_activo = 3;
 												$persona->save();
 												$apoderado = new apoderado();
 												$apoderado->per_rut  = $rut_apo['numero'];
@@ -630,6 +631,7 @@ class ApoderadoController extends Controller
 												$persona_upd->per_apellido_paterno 	= $value[6];
 												$persona_upd->per_apellido_materno 	= $value[7];
 												//$persona_upd->per_password			= Hash::make(substr($rut_apo['numero'], strlen($rut_apo['numero'])-5, strlen($rut_apo['numero'])));
+												//$persona_upd->per_activo = 3;
 												if ($value[8] != ''){
 													if (filter_var($value[8], FILTER_VALIDATE_EMAIL)) {
 														if (empty($email_array[$value[8]])){

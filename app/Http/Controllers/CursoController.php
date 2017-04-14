@@ -30,6 +30,7 @@ class CursoController extends Controller
 	public $any_numero;
 	public $col_codigo;
 	public $col_nombre;
+	public $cur_anyo;
 	public $per_rut;
 	public $per_nombre;
 	public $niv_codigo;

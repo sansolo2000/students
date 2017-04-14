@@ -111,7 +111,6 @@ else {
 			<div class="col-md-8">
 			
 		    <form id="form_login" class="form-horizontal" method="POST" action="auth/login">
-			{{ Form::hidden('formulario', $formulario) }}
 		    {!! csrf_field() !!}
 		      <fieldset>
 		        <div class="form-group">
@@ -127,25 +126,9 @@ else {
 		          </div>
 		        </div>
 		        <div class="form-group">
-		          <label for="selectRol" class="col-md-3 control-label">Rol:</label>
-		          <div class="col-lg-9">
-					{{ Form::select('selectRol', $varRol, -1, ['class' => 'form-control required']) }}
-		          </div>
-		        </div>
-		        <div class="form-group">
 		          <label for="selectRol" class="col-md-3 control-label">&nbsp;</label>
 		          <div class="col-lg-9">
-		          	<?php
-		          		switch ($formulario){
-		          			case '/':
-		          				$numero = 1;
-		          				break;
-		          			case 'admin':
-		          				$numero = 2;
-		          				break;
-		          		}
-		          	?>
-					<a href="recordarpassword/<?php echo $numero ?>">&iquest;Olvid&oacute; su password?</a>
+					<a href="recordarpassword">&iquest;Olvid&oacute; su password?</a>
 		          </div>
 		        </div>
 		        <div class="form-group">

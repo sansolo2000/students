@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'debug' => env('APP_DEBUG', false),
+    'debug' => env('APP_DEBUG', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -165,6 +165,7 @@ return [
     	Collective\Html\HtmlServiceProvider::class,
     	'Maatwebsite\Excel\ExcelServiceProvider',
    		Barryvdh\DomPDF\ServiceProvider::class,
+    	'Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider',
     		
     ],
 
