@@ -19,6 +19,7 @@ use Session;
 use App\models\anyo;
 use App\models\asignatura;
 use App\models\rol;
+use App\models\asign_profe_curso;
 
 class CursoController extends Controller
 {
@@ -336,8 +337,8 @@ class CursoController extends Controller
 		->where('cursos.cur_activo', '=', 1)
 		->where('profesores.per_rut', '=', $per_rut);
 
-		$asignatura = asignatura::join('cursos', 'asignaturas.cur_codigo', '=', 'cursos.cur_codigo')
-		->join('profesores', 'asignaturas.pro_codigo', '=', 'profesores.pro_codigo')
+		$asignatura = asign_profe_curso::join('cursos', 'asign_profe_curso.cur_codigo', '=', 'cursos.cur_codigo')
+		->join('profesores', 'asign_profe_curso.pro_codigo', '=', 'profesores.pro_codigo')
 		->select('cursos.cur_codigo')
 		->where('cursos.cur_activo', '=', 1)
 		->where('profesores.per_rut', '=', $per_rut);

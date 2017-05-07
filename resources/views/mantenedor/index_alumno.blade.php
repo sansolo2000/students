@@ -139,12 +139,12 @@ else {
 								<thead>
 									<tr>
 										<th style="width:5%">Numero</th>
-										<th style="width:16%">Rut</th>
-										<th style="width:16%">P. Nombre</th>
-										<th style="width:16%">A. Paterno</th>
-										<th style="width:16%">A. Materno</th>
-										<th style="width:21%">E-Mail</th>
-										<th style="width:10%">Acciones</th>
+										<th style="width:15%">Rut</th>
+										<th style="width:15%">P. Nombre</th>
+										<th style="width:15%">A. Paterno</th>
+										<th style="width:15%">A. Materno</th>
+										<th style="width:20%">E-Mail</th>
+										<th style="width:15%">Acciones</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -222,31 +222,28 @@ else {
 													@endif
 												@endforeach
 												<td>
-													<div class="btn-toolbar" role="toolbar" style="width: 100px;">
-														<div class="btn-group">
-															<?php 
-																$controller = $entidad['controller'].'/'.$record[$entidad['pk']].'/edit'; 
-																if ($privilegio->mas_edit == 1){
-																	$clase = '';
-																}
-																else{
-																	$clase = "disabled";
-																}
-															?>
-															<a href="<?php echo $controller ?>" class="btn btn-default <?php echo $clase; ?>">
-																<span class="glyphicon glyphicon-edit"></span>
-															</a>
 															{{ Form::open(array('url' => $entidad['controller'].'/'.$record[$entidad['pk']], 'class' => 'pull-right')) }}
+																<?php 
+																	$controller = $entidad['controller'].'/'.$record[$entidad['pk']].'/edit'; 
+																	if ($privilegio->mas_edit == 1){
+																		$clase = '';
+																	}
+																	else{
+																		$clase = "disabled";
+																	}
+																?>
+																<a href="<?php echo $controller ?>" class="btn btn-default <?php echo $clase; ?>">
+																	<span class="glyphicon glyphicon-edit"></span>
+																</a>
 																<?php $url = $entidad['controller']; $id = $record[$entidad['pk']];  ?>
 																@if ($privilegio->mas_delete == 1)
 																	{{ Form::button('<span class="glyphicon glyphicon-remove-circle"></span>', array('class'=>'btn btn-default', 'type'=>'button', 'onclick' => "msg_delete('".$url."', $id); return false;")) }}
 																@else												  
 																	{{ Form::button('<span class="glyphicon glyphicon-remove-circle"></span>', array('class'=>'btn btn-default', 'disabled' => 'disabled', 'type'=>'submit')) }}
 																@endif
+																{{ Form::button('<span class="glyphicon glyphicon glyphicon-user"></span>', array('class'=>'btn btn-default', 'type'=>'button', 'onclick' => "msg_retirar('".$url."', $id); return false;")) }}
 											                    {{ Form::hidden('_method', 'DELETE') }}
 											                {{ Form::close() }}
-														</div>
-													</div>
 												</td>
 											</tr>
 										@endforeach
@@ -275,10 +272,11 @@ else {
 													<a id="add" href="<?php echo $controller ?>" class="btn btn-default <?php echo $clase; ?>">
 															<span class="glyphicon glyphicon-plus-sign"></span>
 													</a>
-													<a id="import" href="<?php echo $import ?>" class="btn btn-default <?php echo $clase; ?>">
+													
+													<a id="import" href="<?php echo $import ?>" class="btn btn-default <?php echo $clase; ?>" <?php echo $cargar; ?>>
 															<span class="glyphicon glyphicon-import"></span>
 													</a>
-
+													
 											</td>
 									    </tr>
 										<tr class="active">

@@ -12,9 +12,9 @@
 					<div class="panel panel-default">
 						<div class="panel-heading"><h3 class="panel-title">Cuenta de Students</h3></div>
 						<div class="panel-body">
-							<h4>Hemos recibido una solicitud de cambio de contrase&ntilde;a.</h4>
-							<h4>Su nueva contrase&ntilde;a es: {{ $password }}</h4>
-							<h4>Usa esta nueva contrase&ntilde;a para restablecer la contraseña de la cuenta con el run: {{ $run }}.
+							<h4>Hemos recibido una solicitud de cambio de password.</h4>
+							<h4>Su nueva password es: {{ $password }}</h4>
+							<h4>Usa esta nueva password para restablecer la cuenta con el run: {{ $run }}.
 							<h4>Gracias,</h4>
 							<h4>{{ $colegio }}</h4>
 						</div>

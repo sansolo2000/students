@@ -28,6 +28,14 @@ else {
 					'imagen'	=> $colegios['col_logo']
 							])
 @section('content')
+<style type="text/css">
+	.data-table{
+		width:100%; 
+		overflow-x: scroll; 
+		overflow-y:hidden; }
+</style>
+
+
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.min.js"></script>
 {!! Html::script('assets/js/jquery-validate.bootstrap-tooltip.js') !!}
@@ -109,8 +117,8 @@ else {
 							mostrar += ' 	<div class="panel-heading">';
 							mostrar += ' 		<h3 class="panel-title">Notas alumnos</h3>';
 							mostrar += ' 	</div>';
-							mostrar += ' 	<div class="panel-body">';
-							mostrar += ' 		<table class="table table-striped table-hover table-bordered">';
+							mostrar += ' 	<div class="panel-body data-table">';
+							mostrar += ' 		<table class="table table-striped table-hover table-bordered data-table">';
 							mostrar += ' 			<thead>';
 							mostrar += ' 				<tr class="active">';
 							mostrar += ' 					<th style="width:10%">Asignatura</th>';
@@ -223,10 +231,10 @@ else {
 							mostrar += '</div>';
 						}
 						else{
-							mostrar = '<div class="container col-md-12">';
-							mostrar += ' <div class="panel panel-primary" style="text-align:center">';
-							mostrar += ' 		<h3>No hay notas cargadas</h3>';
-							mostrar += ' </div>';
+							mostrar = '<div class="container col-md-4 col-md-offset-4">';
+							mostrar += '	<div class="alert alert-dismissible alert-danger">';
+							mostrar += '			No hay notas cargadas.';
+							mostrar += '	</div>';
 							mostrar += '</div>';
 							$('#btnSub').attr('src','assets/img/pdf_dis.png');
 							$('#btnSub').prop( "disabled", true );
@@ -241,7 +249,8 @@ else {
 			var cur_codigo = $("#hid_cur_codigo").val();
 			
 			$.get("/students/public/cursos_mostrar" + "/" + per_rut, function(response,state){
-				if (response.length == 0){
+				console.log(response.length);
+				if (response.length == 1){
 					BootstrapDialog.alert({
 						title: 'Error',
 						message: 'No existe curso a mostrar',
@@ -250,6 +259,8 @@ else {
 						draggable: true, // <-- Default value is false
 						buttonLabel: 'Volver', // <-- Default value is 'OK',
 					});
+					$("#cur_nombre").attr('disabled','disabled');
+					$("#alu_nombre").attr('disabled','disabled');
 				}
 				else{
 					var profesores = []; 

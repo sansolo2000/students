@@ -80,6 +80,37 @@ function msg_delete(url, id){
 
 }
 
+function msg_retirar(url, id){
+	 BootstrapDialog.confirm({
+        title: 'Precaucion',
+        message: 'Esta seguro que desea retirar al alumno?',
+        type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+        closable: true, // <-- Default value is false
+        draggable: true, // <-- Default value is false
+        btnCancelLabel: 'Cancelar', // <-- Default value is 'Cancel',
+        btnOKLabel: 'Continuar', // <-- Default value is 'OK',
+        btnOKClass: 'btn-warning', // <-- If you didn't specify it, dialog type will be used,
+        callback: function(result) {
+            // result will be true if button was click, while it will be false if users close the dialog directly.
+            if(result) {
+           	 $.ajax({
+           		    url: url+"/retirar/"+id,
+           		    type: 'POST',
+        		    data: {	_token 	: $('input[name="_token"]').val() 
+        		    },
+           		    error: function(status){
+           		    	console.log(status);
+           		    }, 
+           		    success: function(result) {
+           		        // Do something with the result
+           		    	location.reload();
+           		    }
+           		});
+            }
+        }
+    });
+
+}
 
 $(document).ready(function() {
 	$("#apl_nombre").change(function(event){

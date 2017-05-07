@@ -33,7 +33,6 @@ else {
 	$().ready(function () {
 		$('#myform').validate({
 			rules: {
-				'groupSave'				:	{required: true},
 				'groupOrganiza'			:	{required: true},
 				'import_file'			:	{required: true, extension: 'xls|xlsx'}
 			}
@@ -68,27 +67,6 @@ else {
 								<div class="panel-heading">
 						    		<h3 class="panel-title">{{ $title}}</h3>
 						  		</div>
-								<div class="panel-footer">Modo Guardado</div>
-						  		<div class="panel-body">
-									<div class="col-sm-3">
-									</div>
-									<div class="col-sm-6" style="text-align: left;">
-										<div class="radio">
-											<label>
-												<input type="radio" name="groupSave" value="save" id="save">
-												Sobreescribir
-											</label>
-		        						</div>
-										<div class="radio">
-											<label>
-												<input type="radio" name="groupSave" value="modify" id="modify">
-												Modificar
-											</label>
-										</div>
-									</div>
-									<div class="col-sm-3">
-									</div>
-								</div>
 								<div class="panel-footer">Organizar</div>
 						  		<div class="panel-body">
 									<div class="col-sm-3">

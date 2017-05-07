@@ -3,9 +3,65 @@
 	
 	
 	use App\models\persona;
-	
+	use Session;
 	
 	class util{
+
+		public static function limpiar_cookies(){
+			Session::forget('search.colegio');
+			Session::forget('search.usuario');
+			Session::forget('search.alumno_persona');
+			Session::forget('search.alumno_curso');
+			Session::forget('search.alumno_errores');
+			Session::forget('search.aplicacion');
+			Session::forget('search.apoderado_persona');
+			Session::forget('search.apoderado_curso');
+			Session::forget('search.apoderado_errores');
+			Session::forget('search.asignatura');
+			Session::forget('search.cargarnotas');
+			Session::forget('search.cargarnotas_errores');
+			Session::forget('search.comuna');
+			Session::forget('search.curso');
+			Session::forget('search.malla_curricular');
+			Session::forget('search.modulo_asignados');
+			Session::forget('search.modulo');
+			Session::forget('search.nivel');
+			Session::forget('search.periodo');
+			Session::forget('search.profesor');
+			Session::forget('search.region');
+			Session::forget('search.rol');
+		}
+		
+		public static function validaRut($rut){
+			if(strpos($rut,"-")==false){
+				$RUT[0] = substr($rut, 0, -1);
+				$RUT[1] = substr($rut, -1);
+			}else{
+				$RUT = explode("-", trim($rut));
+			}
+			$suma = 0;
+			$elRut = str_replace(".", "", trim($RUT[0]));
+			$factor = 2;
+			for($i = strlen($elRut)-1; $i >= 0; $i--):
+				$factor = $factor > 7 ? 2 : $factor;
+				$suma += $elRut{$i}*$factor++;
+			endfor;
+			$resto = $suma % 11;
+			$dv = 11 - $resto;
+			if($dv == 11){
+				$dv=0;
+			}else if($dv == 10){
+				$dv="k";
+			}else{
+				$dv=$dv;
+			}
+			if($dv == trim(strtolower($RUT[1]))){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
 		 public static function roles_persona($per_rut){
 			$roles = persona::join('asignaciones', 'asignaciones.per_rut', '=', 'personas.per_rut')
 		 						->join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')

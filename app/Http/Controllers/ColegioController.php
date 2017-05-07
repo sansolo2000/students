@@ -23,6 +23,7 @@ class ColegioController extends Controller
 	public $reg_codigo;
 	public $reg_nombre;
 	public $col_nombre;
+	public $col_email;
 	public $col_direccion;
 	public $Privilegio_modulo = 'Colegios';
 	public $paginate = 10;
@@ -48,10 +49,12 @@ class ColegioController extends Controller
 			if (!empty($_POST)){
 				$exist = 1;
 				$this->col_nombre 		= $_POST['col_nombre'];
+				$this->col_email 		= $_POST['col_email'];
 				$this->reg_codigo 		= $_POST['reg_nombre'];
 				$this->com_codigo 		= $_POST['com_nombre'];
 				$this->col_direccion 	= $_POST['col_direccion'];
 				Session::put('search.colegio', array(	'col_nombre' 	=> $this->col_nombre,
+														'col_email' 	=> $this->col_email,
 														'reg_codigo' 	=> $this->reg_codigo,
 														'com_codigo' 	=> $this->com_codigo,
 														'col_direccion' => $this->col_direccion));
@@ -61,6 +64,7 @@ class ColegioController extends Controller
 					$exist = 1;
 					$search = Session::get('search.colegio');
 					$this->col_nombre = $search['col_nombre'];
+					$this->col_email = $search['col_email'];
 					$this->reg_codigo = $search['reg_codigo'];
 					$this->com_codigo = $search['com_codigo'];
 					$this->col_direccion = $search['col_direccion'];
@@ -84,6 +88,9 @@ class ColegioController extends Controller
 				if ($this->col_nombre != ''){
 					$colegios = $colegios->where('colegios.col_nombre', 'LIKE', '%'.$this->col_nombre.'%');
 				}
+				if ($this->col_email != ''){
+					$colegios = $colegios->where('colegios.col_email', 'LIKE', '%'.$this->col_email.'%');
+				}
 				if ($this->col_direccion != ''){
 					$colegios = $colegios->where('colegios.col_direccion', 'LIKE', '%'.$this->col_direccion.'%');
 				}
@@ -96,13 +103,13 @@ class ColegioController extends Controller
 
 				$colegios = $colegios->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'colegios', 'pk' => 'col_codigo', 'clase' => 'container col-md-12', 'col' => 7);
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'colegios', 'pk' => 'col_codigo', 'clase' => 'container col-md-12', 'col' => 8);
 			return view('mantenedor.index')
-			->with('menu', $menu)
-			->with('tablas', $tabla)
-			->with('records', $colegios)
-			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+						->with('menu', $menu)
+						->with('tablas', $tabla)
+						->with('records', $colegios)
+						->with('entidad', $entidad)
+						->with('privilegio', $privilegio);
 		}
 	}
 
@@ -132,7 +139,7 @@ class ColegioController extends Controller
 		$menu = navegador::crear_menu($idusuario);
 		$privilegios = navegador::privilegios($idusuario, $this->Privilegio_modulo);
 		$privilegio = $privilegios[0];
-		$validate = ColegioController::validador();
+		$validate = ColegioController::validador('create');
 		if ($privilegio->mas_add == 0){
 			return redirect()->route('logout');
 		}
@@ -177,6 +184,7 @@ class ColegioController extends Controller
 					$colegio = new colegio;
 					$input = Input::all();
 					$colegio->col_nombre 		= $input['col_nombre'];
+					$colegio->col_email 		= $input['col_email'];
 					$colegio->col_direccion 	= $input['col_direccion'];
 					$colegio->com_codigo 		= $input['com_nombre'];
 					$colegio->col_activo  		= isset($input['col_activo']) ? 1 : 0;
@@ -195,7 +203,7 @@ class ColegioController extends Controller
 		$menu = navegador::crear_menu($idusuario);
 		$privilegios = navegador::privilegios($idusuario, $this->Privilegio_modulo);
 		$privilegio = $privilegios[0];
-		$validate = ColegioController::validador();
+		$validate = ColegioController::validador('edit');
 		if ($privilegio->mas_edit == 0){
 			return redirect()->route('logout');
 		}
@@ -241,6 +249,7 @@ class ColegioController extends Controller
 			$colegio = Colegio::find($id);
 			$input = Input::all();
 			$colegio->col_nombre 		= $input['col_nombre'];
+			$colegio->col_email 		= $input['col_email'];
 			$colegio->col_direccion 	= $input['col_direccion'];
 			$colegio->com_codigo 		= $input['com_nombre'];
 			$colegio->col_activo  		= isset($input['col_activo']) ? 1 : 0;
@@ -265,6 +274,7 @@ class ColegioController extends Controller
 						Request::file('col_logo')->move($path, $fileName);
 						$input = Input::all();
 						$colegio->col_nombre 		= $input['col_nombre'];
+						$colegio->col_email 		= $input['col_email'];
 						$colegio->col_direccion 	= $input['col_direccion'];
 						$colegio->com_codigo 		= $input['com_nombre'];
 						$colegio->col_activo  		= isset($input['col_activo']) ? 1 : 0;
@@ -287,6 +297,16 @@ class ColegioController extends Controller
 							'tipo'			=> 'input',
 							'select'		=> 0,
 							'value'			=> $this->col_nombre,
+							'filter'		=> 1,
+							'enable'		=> 1);
+		$tabla[] = array(	'nombre' 		=> 'E-Mail',
+							'campo'			=> 'col_email',
+							'clase' 		=> 'container col-md-5',
+							'validate'		=> '',
+							'descripcion'	=> 'E-Mail',
+							'tipo'			=> 'input',
+							'select'		=> 0,
+							'value'			=> $this->col_email,
 							'filter'		=> 1,
 							'enable'		=> 1);
 		$tabla[] = array(	'nombre' 		=> 'Direccion',
@@ -342,25 +362,48 @@ class ColegioController extends Controller
 		return $tabla;
 	}
 	
-	public function validador(){
-		$validate = "
-				$().ready(function () {
-					$('#myform').validate({
-						rules: {
-							'col_nombre'			:	{required: true, minlength: 5, maxlength: 50},
-							'col_direccion'			:	{required: true, minlength: 2, maxlength: 50},
-							'reg_nombre'			:	{required: true, min:1},
-							'com_nombre'			:	{required: true, min:1},
-							'col_logo'				:	{required: true, extension: 'jpg|png'}
-						},
-	  					messages: {
-							'reg_nombre'			: { min: 'Seleccione region' },
-				
-							'com_nombre'			: { min: 'Seleccione comuna' }
-						},
-					});
-	
-				});";
+	public function validador($form){
+		if ($form == 'create'){
+			$validate = "
+					$().ready(function () {
+						$('#myform').validate({
+							rules: {
+								'col_nombre'			:	{required: true, minlength: 5, maxlength: 50},
+								'col_email'				:	{required: true, email: true,  minlength: 2, maxlength: 50},
+								'col_direccion'			:	{required: true, minlength: 2, maxlength: 50},
+								'reg_nombre'			:	{required: true, min:1},
+								'com_nombre'			:	{required: true, min:1},
+								'col_logo'				:	{required: true, extension: 'jpg|png'}
+							},
+		  					messages: {
+								'reg_nombre'			: { min: 'Seleccione region' },
+					
+								'com_nombre'			: { min: 'Seleccione comuna' }
+							},
+						});
+		
+					});";
+		}
+		if ($form == 'edit'){
+			$validate = "
+					$().ready(function () {
+						$('#myform').validate({
+							rules: {
+								'col_nombre'			:	{required: true, minlength: 5, maxlength: 50},
+								'col_email'				:	{required: true, email: true,  minlength: 2, maxlength: 50},
+								'col_direccion'			:	{required: true, minlength: 2, maxlength: 50},
+								'reg_nombre'			:	{required: true, min:1},
+								'com_nombre'			:	{required: true, min:1},
+							},
+		  					messages: {
+								'reg_nombre'			: { min: 'Seleccione region' },
+			
+								'com_nombre'			: { min: 'Seleccione comuna' }
+							},
+						});
+		
+					});";
+		}
 		return $validate;
 	}
 	

@@ -9,15 +9,16 @@ use App\models\administrador;
 use App\models\alumno;
 use App\models\profesor;
 use App\models\apoderado;
-
+use App\models\asignacion;
+use App\models\rol;
 use App\helpers\util;
 use App\helpers\navegador;
 use View;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
+use Illuminate\Support\Facades\Hash;
 use Session;
 use DB;
-use App\models\rol;
 
 class AdministradorController extends Controller
 {
@@ -158,28 +159,53 @@ class AdministradorController extends Controller
 									->lists('rol_nombre', 'rol_codigo');
 			$this->rol_nombre = util::array_indice($this->rol_nombre, -1);
 			$tabla = AdministradorController::arreglo();
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'modulos', 'pk' => 'rol_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'administradores', 'pk' => 'per_rut_adm', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
 			return view('mantenedor.add')
-			->with('menu', $menu)
-			->with('validate', $validate)
-			->with('title', 'Ingresar Usuarios')
-			->with('tablas', $tabla)
-			->with('entidad', $entidad);
+						->with('menu', $menu)
+						->with('validate', $validate)
+						->with('title', 'Ingresar Usuarios')
+						->with('tablas', $tabla)
+						->with('entidad', $entidad);
 		}
 	}
 
 	public function store()
 	{
-		$modulo = new modulo;
 		$input = Input::all();
-		$modulo->mod_nombre 		= $input['mod_nombre'];
-		$modulo->apl_codigo 		= $input['apl_nombre'];
-		$modulo->mod_descripcion 	= $input['mod_descripcion'];
-		$modulo->mod_url 			= $input['mod_url'];
-		$modulo->mod_orden  		= $input['mod_orden'];
-		$modulo->mod_activo  		= isset($input['mod_activo']) ? 1 : 0;
-		$modulo->save();
-		return redirect()->route('modulos.index');
+		$persona = new persona;
+		$rut = util::format_rut($input['per_rut_adm']);
+		
+		$cantidad = Persona::where('per_rut', '=', $rut['numero'])->count();
+		if ($cantidad == 0){
+			$persona->per_rut = $rut['numero'];
+			$persona->per_dv = $rut['dv'];
+			$persona->per_nombre = $input['per_nombre'];
+			$persona->per_apellido_paterno = $input['per_apellido_paterno'];
+			$persona->per_apellido_materno = $input['per_apellido_materno'];
+			$persona->per_password = Hash::make($input['per_password']);
+			$persona->per_email = $input['per_email'];
+			$persona->save();
+		}
+		else{
+			$persona = new persona;
+			$persona = Persona::find($rut['numero']);
+				
+			$persona->per_nombre = $input['per_nombre'];
+			$persona->per_apellido_paterno = $input['per_apellido_paterno'];
+			$persona->per_apellido_materno = $input['per_apellido_materno'];
+			$persona->per_password = Hash::make($input['per_password']);
+			$persona->per_email = $input['per_email'];
+			$persona->save();
+		}
+		$cantidad = asignacion::where('per_rut', '=', $rut['numero'])->count();
+		
+		if ($cantidad == 0){
+			$asignacion = new asignacion;
+			$asignacion->rol_codigo = $input['rol_nombre'];
+			$asignacion->per_rut = $rut['numero'];
+			$asignacion->save();
+		}
+		return redirect()->route('administradores.index');
 	}
 
 	public function edit($id)
@@ -192,20 +218,45 @@ class AdministradorController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$this->apl_nombre = aplicacion::where('apl_activo', '=', '1')
-			->orderBy('apl_orden', 'ASC')
-			->lists('apl_nombre', 'apl_codigo');
-			$this->apl_nombre = util::array_indice($this->apl_nombre, -1);
-			$this->apl_codigo = 'apl_codigo';
-			$tabla = ModuloController::arreglo();
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'modulos', 'pk' => 'mod_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
-			$record = Modulo::find($id);
+			$this->rol_nombre = 	rol::where('rol_activo', '=', '1')
+											->wherein('roles.rol_nombre', array('Administrador', 'Direccion'))
+											->orderBy('rol_orden', 'ASC')
+											->lists('rol_nombre', 'rol_codigo');
+			$this->rol_nombre = util::array_indice($this->rol_nombre, -1);
+			$this->rol_codigo = 'rol_codigo';
+			$tabla = AdministradorController::arreglo();
+			$validate = AdministradorController::validador();
+			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'administradores', 'pk' => 'per_rut_adm', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
+			//$record = Persona::find($id);
+			$persona = Persona::join('asignaciones', 'personas.per_rut', '=', 'asignaciones.per_rut')
+						->join('roles', 'asignaciones.rol_codigo', '=', 'roles.rol_codigo')
+						->select('personas.per_rut', 'personas.per_dv', 'personas.per_nombre', 'personas.per_apellido_paterno', 'personas.per_apellido_materno', 'personas.per_email', 'roles.rol_codigo')
+						->where('personas.per_rut', '=', $id)
+						->first();
+			$rut = util::format_rut($persona->per_rut, $persona->per_dv);
+				
+			$record = [	'per_rut'			=> $persona->per_rut,
+					'per_rut_adm' 			=> $rut['numero'].'-'.$rut['dv'],
+					'per_nombre'			=> $persona->per_nombre,
+					'per_nombre_segundo'	=> $persona->per_nombre_segundo,
+					'per_apellido_paterno'	=> $persona->per_apellido_paterno,
+					'per_apellido_materno'	=> $persona->per_apellido_materno,
+					'per_email'				=> $persona->per_email,
+					'rol_codigo'			=> $persona->rol_codigo,
+					'mod_password'			=> 1
+			];
+						
+						
+			
+			//util::print_a($record, 0);
+						//$validate = '';
 			return view('mantenedor.edit')
-			->with('record',$record)
-			->with('menu', $menu)
-			->with('entidad', $entidad)
-			->with('tablas', $tabla)
-			->with('title', 'Ingresar Modulos');
+						->with('record', $record)
+						->with('menu', $menu)
+						->with('validate', $validate)
+						->with('entidad', $entidad)
+						->with('tablas', $tabla)
+						->with('title', 'Ingresar Usuarios Generales');
 		}
 	}
 
@@ -215,17 +266,19 @@ class AdministradorController extends Controller
 		// read more on validation at http://laravel.com/docs/validation
 
 		// store
-		$modulo = new modulo;
-		$modulo = Modulo::find($id);
 		$input = Input::all();
-		$modulo->mod_nombre = $input['mod_nombre'];
-		$modulo->apl_codigo = $input['apl_nombre'];
-		$modulo->mod_descripcion = $input['mod_descripcion'];
-		$modulo->mod_url = $input['mod_url'];
-		$modulo->mod_orden  = $input['mod_orden'];
-		$modulo->mod_activo  = isset($input['mod_activo']) ? 1 : 0;
-		$modulo->save();
-		return redirect()->route('modulos.index');
+		$rut = util::format_rut($id);
+		$persona = new persona;
+		$persona = Persona::find($rut['numero']);
+		$persona->per_nombre = $input['per_nombre'];
+		$persona->per_apellido_paterno = $input['per_apellido_paterno'];
+		$persona->per_apellido_materno = $input['per_apellido_materno'];
+		if (!isset($input['mod_password'])){
+			$persona->per_password = Hash::make($input['per_password']);
+		}
+		$persona->per_email = $input['per_email'];
+		$persona->save();
+		return redirect()->route('administradores.index');
 	}
 
 	public function getModulo(Request $request, $apl_codigo, $rol_codigo){
@@ -293,9 +346,19 @@ class AdministradorController extends Controller
 							'select'		=> 0,
 							'filter'		=> 1,
 							'enable'		=> true);
+		$tabla[] = array(	'nombre' 		=> 'Modificar Password',
+							'campo'			=> 'mod_password',
+							'clase' 		=> 'container col-md-1',
+							'validate'		=> '',
+							'descripcion'	=> 'Activo',
+							'value'			=> 1,
+							'tipo'			=> 'check',
+							'select'		=> 0,
+							'filter'		=> 3,
+							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Password',
 							'campo'			=> 'per_password',
-							'clase' 		=> 'container col-md-3',
+							'clase' 		=> 'container col-md-4',
 							'validate'		=> '',
 							'descripcion'	=> 'Password',
 							'value'			=> '',
@@ -305,7 +368,7 @@ class AdministradorController extends Controller
 							'enable'		=> true);
 		$tabla[] = array(	'nombre' 		=> 'Re-Password',
 							'campo'			=> 'per_password_re',
-							'clase' 		=> 'container col-md-3',
+							'clase' 		=> 'container col-md-4',
 							'validate'		=> '',
 							'descripcion'	=> 'Re-password',
 							'value'			=> '',
@@ -341,6 +404,20 @@ class AdministradorController extends Controller
 							'per_password_re'		:	{required: true, minlength: 2, maxlength: 15, equalTo : '#per_password'},
 							'rol_nombre'			:	{required: true, min:1}
 							}
+					});
+					if ($('#mod_password').is(':checked')){
+						$('#per_password').prop('disabled', true);
+						$('#per_password_re').prop('disabled', true);
+					}
+					$('#mod_password').change(function(event){
+						if ($('#mod_password').is(':checked')){
+							$('#per_password').prop('disabled', true);
+							$('#per_password_re').prop('disabled', true);
+						}
+						else {
+							$('#per_password').prop('disabled', false);
+							$('#per_password_re').prop('disabled', false);
+						}
 					});
 				$('#per_rut_adm').change(function(event){
 					$.get('../alumno_administrador/'+event.target.value+'', function(response,state){
@@ -405,7 +482,41 @@ class AdministradorController extends Controller
 						}
 					});
 				
-				});";
+				$('#per_email').change(function(event){
+					per_rut = per_rut_adm.value;
+					if (per_rut.length == 0){
+						console.log(per_rut_pro.value);
+						$('#per_email').val('');
+						$('#per_rut_adm').focus();
+						BootstrapDialog.alert({
+							title: 'Error',
+							message: 'El Run debe ser ingresado primero',
+							type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+							closable: true, // <-- Default value is false
+							draggable: true, // <-- Default value is false
+							buttonLabel: 'Volver', // <-- Default value is 'OK',
+						});
+					}
+					else{
+						$.get('/".util::obtener_url()."validar_email/'+event.target.value+'/'+per_rut, function(response,state){
+							console.log(response);
+							if (response > 0){
+								console.log(response[0]);
+								BootstrapDialog.alert({
+									title: 'Error',
+									message: 'El E-Mail esta ingresado por otro usuario',
+									type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+									closable: true, // <-- Default value is false
+									draggable: true, // <-- Default value is false
+									buttonLabel: 'Volver', // <-- Default value is 'OK',
+								});
+								$('#per_email').val('');			
+							}
+						});
+					}
+				});
+			});
+								";
 		return $validate;
 	}
 	

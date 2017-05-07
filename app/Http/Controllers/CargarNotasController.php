@@ -19,6 +19,7 @@ use App\models\asignatura;
 use Hamcrest\Type\IsNumeric;
 use App\models\profesor;
 use App\models\anyo;
+use App\models\asign_profe_curso;
 
 
 
@@ -91,28 +92,32 @@ class CargarNotasController extends Controller
 							->join('niveles', 'cursos.niv_codigo', '=', 'niveles.niv_codigo')
 							->join('profesores as pj', 'cursos.pro_codigo', '=', DB::raw('pj.pro_codigo'))
 							->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
-							->where('cursos.cur_codigo', '=', $this->cur_codigo)
-							->first();
-				$asignaturas = curso::select('asignaturas.asg_codigo', 'asignaturas.asg_nombre')
-							->join('asignaturas', 'cursos.cur_codigo', '=', 'asignaturas.cur_codigo')
-							->join('profesores', 'asignaturas.pro_codigo', '=', 'profesores.pro_codigo')
+							->where('cursos.cur_codigo', '=', $this->cur_codigo);
+				$cantidadprofesor = $profesor->count();
+				$profesor = $profesor->first();
+				$asignaturas = asign_profe_curso::join('cursos', 'asign_profe_curso.cur_codigo', '=', 'cursos.cur_codigo')
+							->join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+							->join('profesores', 'asign_profe_curso.pro_codigo', '=', 'profesores.pro_codigo')
+							->select('asignaturas.asg_codigo', 'asignaturas.asg_nombre')
 							->orderBy('asignaturas.asg_orden', 'ASC')
-							->where('asignaturas.cur_codigo', '=', $this->cur_codigo);
+							->where('cursos.cur_codigo', '=', $this->cur_codigo);
 				if ($privilegio->rol_nombre == 'Profesor'  && $profesor['per_rut'] != $idusuario){
 					$asignaturas = $asignaturas->where('profesores.per_rut', '=', $idusuario);
 				}
 				$asignaturas = $asignaturas->get();
-				$alumnos = curso::select(DB::raw('al.alu_codigo'), 'asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('ag.per_rut as per_rut'), DB::raw('ag.per_dv as per_dv'),
-										DB::raw('ag.per_nombre as per_nombre'), DB::raw('ag.per_apellido_paterno as per_apellido_paterno'),
-										DB::raw('ag.per_apellido_materno as per_apellido_materno'),
-										DB::raw('pr.per_nombre as pro_nombre'), DB::raw('pr.per_apellido_paterno as pro_apellido_paterno'),
-										DB::raw('pr.per_apellido_materno as pro_apellido_materno'))
-							->join('asignaturas', 'cursos.cur_codigo', '=', 'asignaturas.cur_codigo')
-							->join('profesores as pj', 'asignaturas.pro_codigo', '=', DB::raw('pj.pro_codigo'))
+				$alumnos = asign_profe_curso::join('cursos', 'asign_profe_curso.cur_codigo', '=', 'cursos.cur_codigo')
+							->join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+							->join('profesores as pj', 'asign_profe_curso.pro_codigo', '=', DB::raw('pj.pro_codigo'))
 							->join('alumnos as al', 'cursos.cur_codigo', '=', DB::raw('al.cur_codigo'))
 							->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
 							->join('personas AS ag', DB::raw('ag.per_rut'), '=', 'al.per_rut')
-							->where('asignaturas.cur_codigo', '=', $this->cur_codigo);
+							->where('asign_profe_curso.cur_codigo', '=', $this->cur_codigo)
+							->where('al.alu_activo', '=', 1)
+							->select(DB::raw('al.alu_codigo'), 'asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('ag.per_rut as per_rut'), DB::raw('ag.per_dv as per_dv'),
+									DB::raw('ag.per_nombre as per_nombre'), DB::raw('ag.per_apellido_paterno as per_apellido_paterno'),
+									DB::raw('ag.per_apellido_materno as per_apellido_materno'),
+									DB::raw('pr.per_nombre as pro_nombre'), DB::raw('pr.per_apellido_paterno as pro_apellido_paterno'),
+									DB::raw('pr.per_apellido_materno as pro_apellido_materno'))				;
 							if ($privilegio->rol_nombre == 'Profesor'  && $profesor['per_rut'] != $idusuario){
 								$alumnos = $alumnos->where(DB::raw('pj.per_rut'), '=', $idusuario);
 							}
@@ -121,166 +126,183 @@ class CargarNotasController extends Controller
 							->get();
 //				util::print_a($alumnos, 0);
 			}
-			
-			$cabecera = '
+			$script = '';
+			$modal = '';
+			if ($cantidadprofesor > 0 && $asignaturas->count() > 0 && $alumnos->count() > 0){
+				$cabecera = '
 					<div class="form-group col-sm-12">
 					<ul class="nav nav-tabs">';
-			$ubicacion = 1;
- 			$script = '';
- 			$modal = '';
-			$periodos = periodo::orderBy('periodos.pri_orden', 'ASC')->get();
- 			foreach ($asignaturas as $asignatura){
- 				$cantidad = curso::where('cursos.cur_codigo', '=', $this->cur_codigo)->first();
- 				//util::print_a($cantidad, 0);
-			 	$notas = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
-						->where('asignaturas.cur_codigo', '=', $this->cur_codigo)
-						->where('asignaturas.asg_codigo', '=', $asignatura->asg_codigo);
-				$notas = $notas->groupby('asignaturas.asg_nombre')
-						->select(DB::raw('calificaciones.asg_codigo, asignaturas.asg_nombre, count(*) as cantidad'))
-						->orderBy(DB::raw('cantidad'), 'ASC')
-						->first();
-			 	$cantidad = $cantidad['cur_cantidad_notas'];
-				
-//				util::print_a($modal, 0);
-				
-				if ($ubicacion == 1){
-					$cabecera .= '<li class="active">';
-					$ubicacion = 0;
-				}
-				else{
-					$cabecera .= '<li>';
-				}
-				$cabecera .= '			<a aria-expanded="false" href="#'.$asignatura->asg_codigo.'" data-toggle="tab">'.$asignatura->asg_nombre.'</a>';
-				$cabecera .= '</li>';
-			}
-			$cabecera .= '</ul>';
-			
-			
- 			$cuerpo	= '<div id="myTabContent" class="tab-content">';
- 			$asignatura_seleccionada = '';
- 			$ubicacion = 1;
-
-			$periodos = periodo::orderBy('periodos.pri_orden', 'ASC')->get();
- 			foreach ($alumnos as $alumno){
- 				if ($alumno->asg_nombre != $asignatura_seleccionada){
- 					if ($asignatura_seleccionada != ''){
- 						$cuerpo	.= '</tbody>
- 									</table>
- 									</div>';
- 					}
- 					$asignatura_seleccionada = $alumno->asg_nombre; 
- 					if ($ubicacion == 1){
- 						$cuerpo	.= '<div class="tab-pane fade active in" id="'.$alumno->asg_codigo.'">';
- 						$ubicacion = 0;
- 					}
- 					else{
- 						$cuerpo	.= '<div class="tab-pane fade" id="'.$alumno->asg_codigo.'">';
- 					}
- 					$cuerpo .= '
-						<div class="container col-md-12">
-							&nbsp;
-						</div>
-						<div class="container col-md-12">
- 							<div class="container col-md-3 center_pers">
- 							
-					  		</div>
- 							<div class="container col-md-6 center_pers">
-								<div class="panel panel-primary">
-									<div class="panel-heading">
-						    			<h3 class="panel-title">Profesor de '.$alumno->asg_nombre.'</h3>
-						  			</div>
-						  			<div class="panel-body">
-										<input class="form-control" id="asignatura" name="asignatura" type="text" disabled="disabled" value="'.$alumno->pro_nombre.' '.$alumno->pro_apellido_paterno.' '.$alumno->pro_apellido_materno.'">
-									</div>
-								</div>
-							</div>
-							<div class="container col-md-3 center_pers">
-					  		</div>
-						</div>';
- 					$cuerpo	.= '<table class="table table-striped table-hover table-bordered">
-				 					<thead>
-					 					<tr>
-						 					<th style="width:12%">Rut</th>
-						 					<th style="width:22%">Alumno</th>';
- 					$width = 66 / ($cantidad + 1);
-					for ($i = 1; $i <= $cantidad; $i++){							
-						$cuerpo	.= '<th style="width:'.$width.'%">N'.$i.'</th>';
-					}
-					$cuerpo	.= '<th style="width:'.$width.'%">Pro</th>
- 										</tr>
-					 				</thead>
- 									<tbody>';
- 				}
- 				$rut = util::format_rut($alumno->per_rut, $alumno->per_dv);
- 				$cuerpo	.= '
-					 					<tr>
-						 					<td>'.$rut['numero'].'-'.$rut['dv'].'</th>
-						 					<td>'.$alumno->per_nombre.' '.$alumno->per_apellido_paterno.' '.$alumno->per_apellido_paterno.'</th>';
- 				$maximo = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
-											->where('asignaturas.cur_codigo', '=', $this->cur_codigo)
-											->where('asignaturas.asg_codigo', '=', $alumno->asg_codigo)
-											->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
-											->where('calificaciones.pri_codigo', '=', $this->pri_codigo)
-											->select(DB::raw('max(calificaciones.cal_fecha) as fecha'))
-											->first();
- 				$calificaciones = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
- 											->where('asignaturas.cur_codigo', '=', $this->cur_codigo)
-											->where('asignaturas.asg_codigo', '=', $alumno->asg_codigo)
-											->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
-											->where('calificaciones.pri_codigo', '=', $this->pri_codigo);
-				if (isset($maximo['fecha'])){
-					$calificaciones = $calificaciones->where('calificaciones.cal_fecha', '=', $maximo['fecha']);
-				}
-												
-				$calificaciones = $calificaciones->select('calificaciones.cal_numero', 'calificaciones.cal_posicion')
-								->orderby('calificaciones.cal_posicion')
- 								->get();
-				$i = 1;
-				$suma = 0;
-				$cantidad_notas = 0;
-				foreach ($calificaciones as $calificacion) {
-					if ((float) $calificacion->cal_numero > 0){
-						$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>'.number_format($calificacion->cal_numero, 1, ',', ' ').'</th>';
-						$NotasMostrar[$calificacion->cal_posicion]['exite'] = true;
-						$NotasMostrar[$calificacion->cal_posicion]['nota'] = $calificacion->cal_numero;
+				$ubicacion = 1;
+				$periodos = periodo::orderBy('periodos.pri_orden', 'ASC')->get();
+	 			foreach ($asignaturas as $asignatura){
+	 				$cantidad = curso::where('cursos.cur_codigo', '=', $this->cur_codigo)->first();
+	 				//util::print_a($cantidad, 0);
+				 	$notas = calificacion::join('asign_profe_curso', 'calificaciones.apc_codigo', '=', 'asign_profe_curso.apc_codigo')
+				 			->join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asign_profe_curso.asg_codigo')
+							->where('asign_profe_curso.cur_codigo', '=', $this->cur_codigo)
+							->where('asign_profe_curso.asg_codigo', '=', $asignatura->asg_codigo);
+					$notas = $notas->groupby('asignaturas.asg_nombre')
+							->select(DB::raw('asignaturas.asg_codigo, asignaturas.asg_nombre, count(*) as cantidad'))
+							->orderBy(DB::raw('cantidad'), 'ASC')
+							->first();
+				 	$cantidad = $cantidad['cur_cantidad_notas'];
+					
+	//				util::print_a($modal, 0);
+					
+					if ($ubicacion == 1){
+						$cabecera .= '<li class="active">';
+						$ubicacion = 0;
 					}
 					else{
-						$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>&nbsp;</td>';
-						$NotasMostrar[$calificacion->cal_posicion]['exite'] = false;
-						$NotasMostrar[$calificacion->cal_posicion]['nota'] = 0;
+						$cabecera .= '<li>';
 					}
+					$cabecera .= '			<a aria-expanded="false" href="#'.$asignatura->asg_codigo.'" data-toggle="tab">'.$asignatura->asg_nombre.'</a>';
+					$cabecera .= '</li>';
 				}
-				for ($i = 1; $i <= $cantidad; $i++){
-					if (!isset($NotasMostrar[$i])){
-						$NotasMostrar[$i]['html'] = '<td>&nbsp;</td>';
-						$NotasMostrar[$i]['exite'] = false;
-						$NotasMostrar[$i]['nota'] = 0;
+				$cabecera .= '</ul>';
+				
+				
+	 			$cuerpo	= '<div id="myTabContent" class="tab-content">';
+	 			$asignatura_seleccionada = '';
+	 			$ubicacion = 1;
+	
+				$periodos = periodo::orderBy('periodos.pri_orden', 'ASC')->get();
+	 			foreach ($alumnos as $alumno){
+	 				if ($alumno->asg_nombre != $asignatura_seleccionada){
+	 					if ($asignatura_seleccionada != ''){
+	 						$cuerpo	.= '</tbody>
+	 									</table>
+	 									</div>';
+	 					}
+	 					$asignatura_seleccionada = $alumno->asg_nombre; 
+	 					if ($ubicacion == 1){
+	 						$cuerpo	.= '<div class="tab-pane fade active in" id="'.$alumno->asg_codigo.'">';
+	 						$ubicacion = 0;
+	 					}
+	 					else{
+	 						$cuerpo	.= '<div class="tab-pane fade" id="'.$alumno->asg_codigo.'">';
+	 					}
+	 					$cuerpo .= '
+							<div class="container col-md-12">
+								&nbsp;
+							</div>
+							<div class="container col-md-12">
+	 							<div class="container col-md-3 center_pers">
+	 							
+						  		</div>
+	 							<div class="container col-md-6 center_pers">
+									<div class="panel panel-primary">
+										<div class="panel-heading">
+							    			<h3 class="panel-title">Profesor de '.$alumno->asg_nombre.'</h3>
+							  			</div>
+							  			<div class="panel-body">
+											<input class="form-control" id="asignatura" name="asignatura" type="text" disabled="disabled" value="'.$alumno->pro_nombre.' '.$alumno->pro_apellido_paterno.' '.$alumno->pro_apellido_materno.'">
+										</div>
+									</div>
+								</div>
+								<div class="container col-md-3 center_pers">
+						  		</div>
+							</div>';
+	 					$cuerpo	.= '<table class="table table-striped table-hover table-bordered">
+					 					<thead>
+						 					<tr>
+							 					<th style="width:12%">Rut</th>
+							 					<th style="width:22%">Alumno</th>';
+	 					$width = 66 / ($cantidad + 1);
+						for ($i = 1; $i <= $cantidad; $i++){							
+							$cuerpo	.= '<th style="width:'.$width.'%">N'.$i.'</th>';
+						}
+						$cuerpo	.= '<th style="width:'.$width.'%">Pro</th>
+	 										</tr>
+						 				</thead>
+	 									<tbody>';
+	 				}
+	 				$rut = util::format_rut($alumno->per_rut, $alumno->per_dv);
+	 				$cuerpo	.= '
+						 					<tr>
+							 					<td>'.$rut['numero'].'-'.$rut['dv'].'</th>
+							 					<td>'.$alumno->per_nombre.' '.$alumno->per_apellido_paterno.' '.$alumno->per_apellido_paterno.'</th>';
+	 				$maximo = calificacion::join('asign_profe_curso', 'calificaciones.apc_codigo', '=', 'asign_profe_curso.apc_codigo')
+	 											->join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+												->where('asign_profe_curso.cur_codigo', '=', $this->cur_codigo)
+												->where('asign_profe_curso.asg_codigo', '=', $alumno->asg_codigo)
+												->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
+												->where('calificaciones.pri_codigo', '=', $this->pri_codigo)
+												->select(DB::raw('max(calificaciones.cal_fecha) as fecha'))
+												->first();
+	 				$calificaciones = calificacion::join('asign_profe_curso', 'calificaciones.apc_codigo', '=', 'asign_profe_curso.apc_codigo')
+	 											->join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+	 											->where('asign_profe_curso.cur_codigo', '=', $this->cur_codigo)
+												->where('asign_profe_curso.asg_codigo', '=', $alumno->asg_codigo)
+												->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
+												->where('calificaciones.pri_codigo', '=', $this->pri_codigo);
+					if (isset($maximo['fecha'])){
+						$calificaciones = $calificaciones->where('calificaciones.cal_fecha', '=', $maximo['fecha']);
 					}
+													
+					$calificaciones = $calificaciones->select('calificaciones.cal_numero', 'calificaciones.cal_posicion')
+									->orderby('calificaciones.cal_posicion')
+	 								->get();
+					$i = 1;
+					$suma = 0;
+					$cantidad_notas = 0;
+					foreach ($calificaciones as $calificacion) {
+						if ((float) $calificacion->cal_numero > 0){
+							$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>'.number_format($calificacion->cal_numero, 1, ',', ' ').'</th>';
+							$NotasMostrar[$calificacion->cal_posicion]['exite'] = true;
+							$NotasMostrar[$calificacion->cal_posicion]['nota'] = $calificacion->cal_numero;
+						}
+						else{
+							$NotasMostrar[$calificacion->cal_posicion]['html'] = '<td>&nbsp;</td>';
+							$NotasMostrar[$calificacion->cal_posicion]['exite'] = false;
+							$NotasMostrar[$calificacion->cal_posicion]['nota'] = 0;
+						}
+					}
+					for ($i = 1; $i <= $cantidad; $i++){
+						if (!isset($NotasMostrar[$i])){
+							$NotasMostrar[$i]['html'] = '<td>&nbsp;</td>';
+							$NotasMostrar[$i]['exite'] = false;
+							$NotasMostrar[$i]['nota'] = 0;
+						}
+					}
+					for ($i = 1; $i <= $cantidad; $i++){
+						if ($NotasMostrar[$i]['exite']){
+							$suma = $suma + $NotasMostrar[$i]['nota'];
+							$cantidad_notas++;
+						}
+						$cuerpo	.= $NotasMostrar[$i]['html'];
+	 				}
+	 				if ($cantidad_notas == 0){
+		 				$cuerpo	.= '				<td>'.number_format($suma, 1, ',', ' ').'</td>
+		 										</tr>';
+	 				}
+	 				else {
+		 				$suma = $suma / $cantidad_notas;
+		 				$cuerpo	.= '				<td>'.number_format($suma, 1, ',', ' ').'</td>
+		 										</tr>';
+	 				}
+	 				unset($NotasMostrar); 						
+	 			}
+	 			$cuerpo	.= '</tbody>
+	 						</table>
+	 						</div>';
+	 			$cuerpo	.= '</div>
+						</div>';
+			}
+			else {
+				$cabecera = '
+					<div class="form-group col-sm-12"></div>';
+				$cuerpo	= '<div id="myTabContent" class="tab-content">';
+				if ($this->cur_codigo == -1){
+					$cuerpo .= '&nbsp;';
 				}
-				for ($i = 1; $i <= $cantidad; $i++){
-					if ($NotasMostrar[$i]['exite']){
-						$suma = $suma + $NotasMostrar[$i]['nota'];
-						$cantidad_notas++;
-					}
-					$cuerpo	.= $NotasMostrar[$i]['html'];
- 				}
- 				if ($cantidad_notas == 0){
-	 				$cuerpo	.= '				<td>'.number_format($suma, 1, ',', ' ').'</td>
-	 										</tr>';
- 				}
- 				else {
-	 				$suma = $suma / $cantidad_notas;
-	 				$cuerpo	.= '				<td>'.number_format($suma, 1, ',', ' ').'</td>
-	 										</tr>';
- 				}
- 				unset($NotasMostrar); 						
- 			}
- 			$cuerpo	.= '</tbody>
- 						</table>
- 						</div>';
- 			$cuerpo	.= '</div>
-					</div>';
-			
+				else{
+					$cuerpo .= '	<div class="alert alert-dismissible alert-danger">';
+					$cuerpo .= '			El curso debe tener: <strong>asignaturas</strong>, <strong>profesores</strong> y <strong>alumnos</strong> para cargar notas.';
+					$cuerpo .= '	</div>';
+				}
+				$cuerpo .= '</div>';
+			}
  			$periodo = new periodo();
  			$periodo = periodo::orderBy('pri_orden', 'ASC')
  									->lists('pri_nombre', 'pri_codigo')
@@ -327,12 +349,12 @@ class CargarNotasController extends Controller
 							->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
 							->where('cursos.cur_codigo', '=', $curso)
 							->first();
-		$asignaturas = curso::select('asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('CONCAT(personas.per_nombre, " ", personas.per_apellido_paterno) as profesor'))
-							->join('asignaturas', 'cursos.cur_codigo', '=', 'asignaturas.cur_codigo')
-							->join('profesores', 'asignaturas.pro_codigo', '=', 'profesores.pro_codigo')
+		$asignaturas = asign_profe_curso::join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+							->join('profesores', 'asign_profe_curso.pro_codigo', '=', 'profesores.pro_codigo')
 							->join('personas', 'profesores.per_rut', '=', 'personas.per_rut')
 							->orderBy('asignaturas.asg_orden', 'ASC')
-							->where('asignaturas.cur_codigo', '=', $curso);
+							->select('asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('CONCAT(personas.per_nombre, " ", personas.per_apellido_paterno) as profesor'))
+							->where('asign_profe_curso.cur_codigo', '=', $curso);
 		if ($privilegio->rol_nombre == 'Profesor'  && $profesor['per_rut'] != $idusuario){
 			$asignaturas = $asignaturas->where('profesores.per_rut', '=', $idusuario);
 		}
@@ -341,7 +363,7 @@ class CargarNotasController extends Controller
 		
 		//$nombre = $curso->name;
 //		util::print_a($asignaturas, 0);
-		$alumnos = alumno::where('alumnos.cur_codigo', '=', $curso)->get();
+		$alumnos = alumno::where('alumnos.cur_codigo', '=', $curso)->where('alumnos.alu_activo', '=', 1)->get();
 		$CantidadAlumnos = $alumnos->count(); 
 		if ($CantidadAlumnos> 0){
 			$libros = $profesor->name.' - Libro de clases';
@@ -359,18 +381,20 @@ class CargarNotasController extends Controller
 				foreach ($asignaturas as $asignaturalistar){
 					$excel->sheet($asignaturalistar->asg_nombre, function($sheet) use($profesor, $asignaturalistar, $periodoMostrar, $notas, $curso, $CantidadAlumnos, $columnas_excel, $periodos, $alfabeto, $idusuario){
 						$ind = 0;
-						$alumnos = curso::select(DB::raw('al.alu_numero'), DB::raw('al.alu_codigo'), 'asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('ag.per_rut as per_rut'), DB::raw('ag.per_dv as per_dv'),
+						$alumnos = asign_profe_curso::select(DB::raw('al.alu_numero'), DB::raw('al.alu_codigo'), 'asignaturas.asg_codigo', 'asignaturas.asg_nombre', DB::raw('ag.per_rut as per_rut'), DB::raw('ag.per_dv as per_dv'),
 											DB::raw('ag.per_nombre as per_nombre'), DB::raw('ag.per_apellido_paterno as per_apellido_paterno'),
 											DB::raw('ag.per_apellido_materno as per_apellido_materno'),
 											DB::raw('pr.per_nombre as pro_nombre'), DB::raw('pr.per_apellido_paterno as pro_apellido_paterno'),
 											DB::raw('pr.per_apellido_materno as pro_apellido_materno'))
-											->join('asignaturas', 'cursos.cur_codigo', '=', 'asignaturas.cur_codigo')
-											->join('profesores as pj', 'asignaturas.pro_codigo', '=', DB::raw('pj.pro_codigo'))
+											->join('cursos', 'cursos.cur_codigo', '=', 'asign_profe_curso.cur_codigo')
+											->join('asignaturas', 'asignaturas.asg_codigo', '=', 'asign_profe_curso.asg_codigo')
+											->join('profesores as pj', 'asign_profe_curso.pro_codigo', '=', DB::raw('pj.pro_codigo'))
 											->join('alumnos as al', 'cursos.cur_codigo', '=', DB::raw('al.cur_codigo'))
 											->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
 											->join('personas AS ag', DB::raw('ag.per_rut'), '=', 'al.per_rut')
-											->where('asignaturas.cur_codigo', '=', $curso)
+											->where('asign_profe_curso.cur_codigo', '=', $curso)
 											->where('asignaturas.asg_codigo', '=', $asignaturalistar->asg_codigo)
+											->where('al.alu_activo', '=', 1)
 											->orderBy('asignaturas.asg_orden', 'ASC')
 											->orderBy(DB::raw('al.alu_numero'), 'ASC')
 											->get();
@@ -388,8 +412,9 @@ class CargarNotasController extends Controller
 								$curso = curso::where('cursos.cur_codigo', '=', $profesor->cur_codigo)->first();
 								$cantidadnotas = $curso->cur_cantidad_notas;
 								for ($i=1; $i <= $cantidadnotas; $i++){
-									$calificaciones = calificacion::join('asignaturas', 'calificaciones.asg_codigo', '=', 'asignaturas.asg_codigo')
-									->where('asignaturas.cur_codigo', '=', $profesor->cur_codigo)
+									$calificaciones = asign_profe_curso::join('calificaciones', 'asign_profe_curso.apc_codigo', '=', 'calificaciones.apc_codigo')
+									->join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+									->where('asign_profe_curso.cur_codigo', '=', $profesor->cur_codigo)
 									->where('asignaturas.asg_codigo', '=', $alumno->asg_codigo)
 									->where('calificaciones.alu_codigo', '=', $alumno->alu_codigo)
 									->where('calificaciones.pri_codigo', '=', $periodo['pri_codigo'])
@@ -567,12 +592,12 @@ class CargarNotasController extends Controller
 								->where('cursos.cur_codigo', '=', $input['curso'])
 								->select('profesores.per_rut', DB::raw('CONCAT(cursos.cur_numero, "-", cursos.cur_letra, " ", niveles.niv_nombre) as name'))
 								->first();
-				$asignatura = asignatura::join('profesores', 'asignaturas.pro_codigo', '=', 'profesores.pro_codigo')
-								->where('asignaturas.cur_codigo', '=', $input['curso'])
-								->select('asignaturas.asg_codigo', 'profesores.per_rut', 'asignaturas.asg_nombre')
+				$asignatura = asign_profe_curso::join('asignaturas', 'asign_profe_curso.asg_codigo', '=', 'asignaturas.asg_codigo')
+								->join('profesores', 'asign_profe_curso.pro_codigo', '=', 'profesores.pro_codigo')
+								->where('asign_profe_curso.cur_codigo', '=', $input['curso'])
+								->select('asign_profe_curso.apc_codigo', 'asignaturas.asg_codigo', 'profesores.per_rut', 'asignaturas.asg_nombre')
 								->where('asignaturas.asg_nombre', '=', $sheetName)
 								->first();
-				
 				$roles = util::roles_persona($idusuario);								
 				if (($roles->rol_nombre != 'Administrador' && $roles->rol_nombre != 'Direccion')){
 					if ((!($profesor->per_rut == $idusuario || $asignatura->per_rut == $idusuario)) && ($validar)){
@@ -669,7 +694,8 @@ class CargarNotasController extends Controller
 
 								$pri_codigo = $pri_periodo->pri_codigo;
 
-								$calificacion = calificacion::where('asg_codigo', '=', $asignatura['asg_codigo'])
+								$calificacion = asign_profe_curso::join('calificaciones', 'asign_profe_curso.apc_codigo', '=', 'calificaciones.apc_codigo')
+														->where('asg_codigo', '=', $asignatura['asg_codigo'])
 														->where('cal_posicion', '=', $nota)
 														->where('alu_codigo', '=', $alumno->alu_codigo)
 														->where('pri_codigo', '=', $pri_codigo);
@@ -677,7 +703,7 @@ class CargarNotasController extends Controller
 								if ($calificacionExiste == 0){
 									if (is_numeric($fila)){
 										$calificacion_new = new calificacion();
-										$calificacion_new->asg_codigo 		= $asignatura['asg_codigo'];
+										$calificacion_new->apc_codigo 		= $asignatura['apc_codigo'];
 										$calificacion_new->cal_numero 		= $fila; 
 										$calificacion_new->cal_posicion 	= $nota;
 										$calificacion_new->cal_fecha		= $fecha;	

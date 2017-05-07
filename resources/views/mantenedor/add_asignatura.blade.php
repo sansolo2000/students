@@ -54,16 +54,40 @@ else {
 				});
 			}
 		});
+		$.get("../../asignatura_asignado/"+{{ $curso->cur_numero }}+"/"+{{ $curso->cur_codigo }}, function(response,state){
+			if (response.length == 0){
+				BootstrapDialog.alert({
+					title: 'Error',
+					message: 'No existen profesores para asignar',
+					type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+					closable: true, // <-- Default value is false
+					draggable: true, // <-- Default value is false
+					buttonLabel: 'Volver', // <-- Default value is 'OK',
+				});
+			}
+			else{
+//				console.log(response);
+				var profesores = []; 
+				for (i=0; i<response.length; i++){
+					$("#asg_nombre").append("<option value='"+response[i].id+"'>"+response[i].name+"</option>");
+				}
+				console.log(profesores);
+				$("#asg_nombre").select2({
+//					  data: profesores
+				});
+			}
+		});
 	});
 
+	
 	$().ready(function () {
 		$('#myform').validate({
 			rules: {
-				'asg_nombre'			:	{required: true, minlength: 5, maxlength: 50},
+				'asg_nombre'			:	{required: true, min:1},
 				'pro_nombre'			:	{required: true, min:1},
-				'asg_orden'				:	{required: true, number: true}
 			},
 				messages: {
+				'asg_nombre'			: { min: 'Seleccione asignatura' },
 				'pro_nombre'			: { min: 'Seleccione profesor' }
 			},
 		});
@@ -95,7 +119,9 @@ else {
 											<label for="curso" class="control-label">Asignatura:</label>
 										</div>
 										<div class="col-sm-8">
-											<input class="form-control" id="asg_nombre" name="asg_nombre" type="text" placeholder="Nombre">
+											<select class="form-control"  id="asg_nombre" name="asg_nombre">
+											<!-- Dropdown List Option -->
+											</select>
 											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
 										</div>
 									</div>
@@ -107,24 +133,6 @@ else {
 											<select class="form-control"  id="pro_nombre" name="pro_nombre">
 											<!-- Dropdown List Option -->
 											</select>
-										</div>
-									</div>
-									<div class="form-group col-sm-12">
-										<div class="col-sm-4">
-											<label for="curso" class="control-label">Orden:</label>
-										</div>
-										<div class="col-sm-5">
-											<input class="form-control" id="asg_orden" name="asg_orden" placeholder="Orden" type="text">
-										</div>
-										<div class="col-sm-3">
-										</div>
-									</div>
-									<div class="form-group col-sm-12">
-										<div class="col-sm-4">
-											<label for="curso" class="control-label">Activo:</label>
-										</div>
-										<div class="col-sm-8">
-											<input type="checkbox" id="asg_activo" name="asg_activo" >
 										</div>
 									</div>
 									<div class="col-sm-6 col-sm-offset-3" style="text-align: center;">

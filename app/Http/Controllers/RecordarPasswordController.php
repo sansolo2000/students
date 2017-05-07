@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-use Illuminate\Support\Facades\Mail;
 use App\helpers\util;
 use View;
 use App\models\persona;
@@ -13,6 +12,7 @@ use Illuminate\Support\Facades\Input;
 Use App\models\colegio;
 use Illuminate\Support\Facades\Hash;
 use Session;
+use Mail;
 
 
 class RecordarPasswordController extends Controller
@@ -54,21 +54,19 @@ class RecordarPasswordController extends Controller
 		
 			$request = ['email' 	=> $persona->per_email,
 						'name'		=> util::quitar_tildes($persona->per_nombre).' '.util::quitar_tildes($persona->per_apellido_paterno).' '.util::quitar_tildes($persona->per_apellido_materno),
-						'subject' 	=> 'Restablecimiento de password de la cuenta - '.$colegios['col_nombre']];
+						'subject' 	=> 'Restablecimiento de password de la cuenta - '.$colegios['col_nombre'],
+						'title'		=> 'Sistema Students - '.$colegios['col_nombre']
+			];
 		//se envia el array y la vista lo recibe en llaves individuales {{ $email }} , {{ $subject }}...
 		//return view('emails.message')->with('password', $password);
-		//$view = view('emails.message', compact('password'))->render();
-		
-		
-		
 			Mail::send('emails.message', $data, function($message) use ($request)
 			{
 				//remitente
-				$message->from($request['email'], $request['name']);
+				$message->from('sansolo@gmail.com', $request['title']);
 				//asunto
 				$message->subject($request['subject']);
 				//receptor
-				$message->to('sansolo@gmail.com', 'Héctor Sánchez');
+				$message->to($request['email'], $request['name']);
 			});
     	}
     	Session::put('error_session', 'email');

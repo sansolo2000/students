@@ -98,6 +98,7 @@ class VerNotasController extends Controller
 									->join('profesores as pj', 'cursos.pro_codigo', '=', DB::raw('pj.pro_codigo'))
 									->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
 									->where('cursos.cur_activo', '=', 1)
+									->groupBy('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre)'))
 									->get();
 				break;
 				case 'Profesor':
@@ -107,6 +108,7 @@ class VerNotasController extends Controller
 									->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'pj.per_rut')
 									->where('cursos.cur_activo', '=', 1)
 									->where('pr.per_rut', '=', $roles->per_rut)
+									->groupBy('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre)'))
 									->get();
 					break;
 				case 'Apoderado':
@@ -118,6 +120,7 @@ class VerNotasController extends Controller
 									->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'ap.per_rut')
 									->where('pr.per_rut', '=', $roles->per_rut)
 									->where('cursos.cur_activo', '=', 1)
+									->groupBy('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre)'))
 									->get();
 					break;
 				case 'Alumno':
@@ -127,6 +130,7 @@ class VerNotasController extends Controller
 									->join('personas AS pr', DB::raw('pr.per_rut'), '=', 'al.per_rut')
 									->where('cursos.cur_activo', '=', 1)
 									->where('pr.per_rut', '=', $roles->per_rut)
+									->groupBy('cursos.cur_codigo', DB::raw('CONCAT(cursos.cur_numero, "&deg;", cursos.cur_letra, " ", niveles.niv_nombre)'))
 									->get();
 						break;
 		}
@@ -209,11 +213,12 @@ class VerNotasController extends Controller
 		$periodos = $periodos->get();
 		$cursos = curso::where('cursos.cur_codigo', '=', $idcurso)->first();
 		$cantidadnotas = $cursos->cur_cantidad_notas;
-		$width = floor(80 / ((($cantidadnotas + 1) * $cantidadperiodo) + 1));
-		$width_final = 80 - ($width * (((($cantidadnotas + 1) * $cantidadperiodo) + 1)));
+		$width = floor(90 / ((($cantidadnotas + 1) * $cantidadperiodo) + 1));
+		$width_final = 90 - ($width * (((($cantidadnotas + 1) * $cantidadperiodo) + 1)));
 
 		$calificaciones_cantidad = alumno::join('calificaciones', 'calificaciones.alu_codigo', '=', 'alumnos.alu_codigo')
-										->join('asignaturas', 'asignaturas.asg_codigo', '=', 'calificaciones.asg_codigo')
+										->join('asign_profe_curso', 'calificaciones.apc_codigo', '=','asign_profe_curso.apc_codigo')
+										->join('asignaturas', 'asignaturas.asg_codigo', '=', 'asign_profe_curso.asg_codigo')
 										->join('periodos', 'periodos.pri_codigo', '=', 'calificaciones.pri_codigo')
 										->where('alumnos.per_rut', '=',$per_rut)
 										->count();
@@ -226,7 +231,8 @@ class VerNotasController extends Controller
 		$result['columnas'] = array('cantidadperiodo' => $cantidadperiodo, 'cantidadnotas' => $cantidadnotas, 'width' => $width, 'width_final' => $width_final, 'exitencalificaciones' => $ExiteCalificaciones);
 		
 		$pos = 1;
-		$asignaturas = asignatura::where('cur_codigo', '=', $idcurso)
+		$asignaturas = asignatura::join('asign_profe_curso', 'asignaturas.asg_codigo', '=', 'asign_profe_curso.asg_codigo')
+									->where('asign_profe_curso.cur_codigo', '=', $idcurso)
 									->orderBy('asignaturas.asg_orden', 'ASC')
 									->get();
 		$indasignatura = 0;
@@ -235,7 +241,8 @@ class VerNotasController extends Controller
 			foreach ($periodos as $periodo){
 				for ($i=1; $i <= $cantidadnotas; $i++){
 					$calificaciones = alumno::join('calificaciones', 'calificaciones.alu_codigo', '=', 'alumnos.alu_codigo')
-											->join('asignaturas', 'asignaturas.asg_codigo', '=', 'calificaciones.asg_codigo')
+											->join('asign_profe_curso', 'calificaciones.apc_codigo', '=', 'asign_profe_curso.apc_codigo')
+											->join('asignaturas', 'asignaturas.asg_codigo', '=', 'asign_profe_curso.asg_codigo')
 											->join('periodos', 'periodos.pri_codigo', '=', 'calificaciones.pri_codigo')
 											->where('asignaturas.asg_codigo', '=', $asignatura->asg_codigo)
 											->where('periodos.pri_codigo', '=', $periodo->pri_codigo)

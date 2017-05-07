@@ -40,6 +40,7 @@ use App\models\roles;
 		Route::resource('roles', 'RolController');		
 		Route::resource('perfiles', 'Modulo_AsignadoController');		
 		Route::resource('aplicaciones', 'AplicacionController');
+		Route::resource('asignaturas', 'AsignaturaController');
 		Route::resource('modulos', 'ModuloController');
 		Route::resource('comunas', 'ComunaController');
 		Route::resource('colegios', 'ColegioController');
@@ -50,6 +51,7 @@ use App\models\roles;
 		Route::resource('profesores', 'ProfesorController');
 		Route::resource('cursos', 'CursoController');
 		Route::resource('cargarnotas', 'CargarNotasController');
+		Route::resource('malla_curricular', 'MallaCurricularController');
 		Route::resource('asignaturas', 'AsignaturaController');
 		Route::resource('periodos', 'PeriodoController');
 		Route::resource('ver_notas', 'VerNotasController');
@@ -61,6 +63,7 @@ use App\models\roles;
 		Route::post('regiones/search', ['as' => 'regiones/search', 'uses' => 'RegionController@index']);
 		Route::post('roles/search', ['as' => 'roles/search', 'uses' => 'RolController@index']);
 		Route::post('aplicaciones/search', ['as' => 'aplicaciones/search', 'uses' => 'AplicacionController@index']);
+		Route::post('asignaturas/search', ['as' => 'asignaturas/search', 'uses' => 'AsignaturaController@index']);
 		Route::post('comunas/search', ['as' => 'comunas/search', 'uses' => 'ComunaController@index']);
 		Route::post('colegios/search', ['as' => 'comunas/search', 'uses' => 'ColegioController@index']);
 		Route::post('niveles/search', ['as' => 'niveles/search', 'uses' => 'NivelController@index']);
@@ -69,7 +72,7 @@ use App\models\roles;
 		Route::post('apoderados/search', ['as' => 'apoderados/search', 'uses' => 'ApoderadoController@index']);
 		Route::post('cursos/search', ['as' => 'cursos/search', 'uses' => 'CursoController@index']);
 		Route::post('alumnos/search', ['as' => 'alumnos/search', 'uses' => 'AlumnoController@index']);
-		Route::post('asignaturas/search_curso', ['as' => 'asignaturas/search_curso', 'uses' => 'AsignaturaController@index']);
+		Route::post('malla_curricular/search_curso', ['as' => 'malla_curricular/search_curso', 'uses' => 'MallaCurricularController@index']);
 		Route::post('vernotas/search_curso', ['as' => 'vernotas/search_curso', 'uses' => 'VerNotasController@index']);
 		
 		
@@ -82,6 +85,8 @@ use App\models\roles;
 		Route::post('apoderados/search_curso', ['as' => 'apoderados/search_curso', 'uses' => 'ApoderadoController@index']);
 		Route::get('alumnos/import/{id}', ['as' => 'alumnos/import', 'uses' => 'AlumnoController@importar_alumnos']);
 		Route::post('alumnos/import/{id}', ['as' => 'alumnos/import', 'uses' => 'AlumnoController@importar_alumnos']);
+		Route::post('alumnos/retirar/{id}', ['as' => 'alumnos/retirar', 'uses' => 'AlumnoController@retirar']);
+		Route::get('alumnos/retirar/{id}', ['as' => 'alumnos/retirar', 'uses' => 'AlumnoController@retirar']);
 		Route::get('apoderados/import/{id}', ['as' => 'apoderados/import', 'uses' => 'ApoderadoController@importar_apoderados']);
 		Route::post('apoderados/import/{id}', ['as' => 'apoderados/import', 'uses' => 'ApoderadoController@importar_apoderados']);
 		Route::get('alumnos/export/{id}', ['as' => 'alumnos/export', 'uses' => 'AlumnoController@exportar_alumnos']);
@@ -90,11 +95,12 @@ use App\models\roles;
 		Route::post('import_excel/apoderado', ['as' => 'import_excel/apoderado', 'uses' => 'ApoderadoController@save_apoderados']);
 		
 		
-		Route::get('asignaturas/create/{id}', ['as' => 'asignaturas/create', 'uses' => 'AsignaturaController@create']);
+		Route::get('malla_curricular/create/{id}', ['as' => 'malla_curricular/create', 'uses' => 'MallaCurricularController@create']);
 		Route::get('alumnos/create/{id}', ['as' => 'alumnos/create', 'uses' => 'AlumnoController@create']);
 		Route::get('colegios/comuna/{reg_codigo}', ['as' => 'colegios/comuna', 'uses' => 'ComunaController@getComuna']);
 		Route::get('profesores/persona/{per_rut}', ['as' => 'profesores/persona', 'uses' => 'PersonaController@getRol']);
 		Route::get('profesores_asignado', ['as' => 'profesores_asignado', 'uses' => 'CursoController@getProfesores']);
+		Route::get('asignatura_asignado/{cur_numero}/{cur_codigo}', ['as' => 'asignatura_asignado', 'uses' => 'AsignaturaController@getAsignaturas']);
 		Route::get('cursos_disponibles', ['as' => 'cursos_disponibles', 'uses' => 'CursoController@getCursoDisponible']);
 		Route::get('cursos_disponibles_profesores/{per_rut}', ['as' => 'cursos_disponibles_profesores', 'uses' => 'CursoController@getCursoDisponibleProfesor']);
 		Route::get('persona_rol/{per_rut}/{cur_codigo}', ['as' => 'persona_rol', 'uses' => 'PersonaController@getPersonaRol']);
@@ -103,6 +109,7 @@ use App\models\roles;
 		Route::get('notas_mostrar/{idusuario}/{per_rut}/{cur_codigo}', ['as' => 'notas_mostrar', 'uses' => 'VerNotasController@notas_mostrar']);
 		
 		Route::get('alumno_matriculado/{per_rut}', ['as' => 'alumno_matriculado', 'uses' => 'AlumnoController@getAlumno']);
+		Route::get('alumno_retirado/{per_rut}', ['as' => 'alumno_retirado', 'uses' => 'AlumnoController@getAlumnoRetirado']);
 		Route::get('alumno_administrador/{per_rut}', ['as' => 'alumno_administrador', 'uses' => 'AlumnoController@getAlumno']);
 		Route::get('alumno_apoderado/{per_rut}', ['as' => 'alumno_apoderado', 'uses' => 'ApoderadoController@getApoderado_alumno']);
 		Route::get('apoderado/{per_rut}', ['as' => 'alumno_apoderado', 'uses' => 'ApoderadoController@getApoderado']);
@@ -114,5 +121,7 @@ use App\models\roles;
 		
 		
 	});
+
+
 
 

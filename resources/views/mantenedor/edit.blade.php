@@ -30,7 +30,7 @@ else {
 
 <script type="text/javascript">
 
-{{!! $validate !!}}
+{!! $validate !!}
 
 </script>
 

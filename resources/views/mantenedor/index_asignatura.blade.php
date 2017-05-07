@@ -110,11 +110,9 @@ else {
 							<table class="table table-striped table-hover ">
 								<thead>
 									<tr>
-										<th style="width:25%">Nombre</th>
-										<th style="width:40%">Profesor</th>
-										<th style="width:10%">Orden</th>
-										<th style="width:10%">Estado</th>
-										<th style="width:15%">Acciones</th>
+										<th style="width:30%">Asignatura</th>
+										<th style="width:50%">Profesor</th>
+										<th style="width:20%">Acciones</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -196,6 +194,9 @@ else {
 													$controller = $entidad['controller'].'/create';
 													if ($privilegio->mas_add == 1){
 														$clase = '';
+														if ($entidad['disable'] == 1){
+															$clase = 'disabled';
+														}
 													}
 													else{
 														$clase = "disabled";

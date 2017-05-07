@@ -105,7 +105,7 @@ class ExportPDFController extends Controller
 		$mostrar = ' 		<table class="calificaciones" style="width:100%">';
 		$mostrar .= ' 			<thead>';
 		$mostrar .= ' 				<tr class="active">';
-		$mostrar .= ' 					<th style="width:10%">Asignatura</th>';
+		$mostrar .= ' 					<th style="width:20%">Asignatura</th>';
 		for ($j = 1; $j <= $cantidadperiodo; $j++){
 			for ($i = 1; $i <= $cantidadnotas; $i++){
 				$mostrar .= ' 					<th style="width:'.$width.'%">N'.$i.'</th>';
@@ -160,7 +160,7 @@ class ExportPDFController extends Controller
 				$asg_promedio = round($asg_suma / $asg_cantidad, 1);
 				$promedio_periodos[$j] = $promedio_asignaturas;
 				$promedio_asignaturas = [];
-				$mostrar .= '		 			<td class="grueso">'.number_format($asg_promedio, 1, ',', ' ').'</td>';
+				$mostrar .= '		 			<td class="grueso" align="center">'.number_format($asg_promedio, 1, ',', ' ').'</td>';
 			}
 			else {
 				$asg_promedio = 0;
@@ -208,17 +208,21 @@ class ExportPDFController extends Controller
 		for ($j=0; $j<$cantidadperiodo; $j++){
 			$total = 0;
 			$mostrar .= '		 			<td class="grueso" colspan="'.$cantidadnotas.'">&nbsp;</td>';
-			if ($promedio_final[$j] > 0) {
-				$total = round($promedio_final[$j] / $cantidad_final[$j], 1);
-				$promedio_total = $promedio_total + round($total,1);
-				$cantidad_total++;
-				$mostrar .= '		 			<td class="grueso"><strong>'.number_format($total, 1, ',', ' ').'</strong></td>';
+			if (isset($promedio_final[$j])) {
+				if ($promedio_final[$j] > 0) {
+					$total = round($promedio_final[$j] / $cantidad_final[$j], 1);
+					$promedio_total = $promedio_total + round($total,1);
+					$cantidad_total++;
+					$mostrar .= '		 			<td class="grueso" align="center"><strong>'.number_format($total, 1, ',', ' ').'</strong></td>';
+				}
 			}
-				
+			else{
+				$mostrar .= '		 			<td class="grueso"><strong>&nbsp;</strong></td>';
+			}	
 		}
 		$promedio_total = round($promedio_total / $cantidad_total, 1);
 		
-		$mostrar .= '		 			<td class="grueso"><strong>'.number_format($promedio_total, 1, ',', ' ').'</strong></td>';
+		$mostrar .= '		 			<td class="grueso" align="center"><strong>'.number_format($promedio_total, 1, ',', ' ').'</strong></td>';
 		$mostrar .= ' 				</tr>';
 		$mostrar .= ' 		    </tbody>';
 		$mostrar .= ' 		</table>';

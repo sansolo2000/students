@@ -68,8 +68,9 @@ else {
 		});
 		$("#per_rut_alu").change(function(event){
 			$.get("../../alumno_matriculado/"+event.target.value+"", function(response,state){
+				console.log(response[0]);
 				if (response.length > 0){
-					console.log('xx');
+					console.log('ll');
 					if (response[0].profesor != null){
 						BootstrapDialog.alert({
 							title: 'Error',
@@ -104,37 +105,22 @@ else {
 						$("#per_email").val('');
 						$("#per_rut_alu").focus();			
 					}	
-					console.log('xx');
 					if (response[0].alumno != null){
-						$.get("../../alumno_retirado/"+event.target.value+"", function(responsex,state){
-							if (responsex.length == 0){
-								BootstrapDialog.alert({
-									title: 'Error',
-									message: 'Alumno esta matriculado en el curso '+response[0].curso,
-									type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-									closable: true, // <-- Default value is false
-									draggable: true, // <-- Default value is false
-									buttonLabel: 'Volver', // <-- Default value is 'OK',
-								});
-								$("#per_rut_alu").val('');			
-								$("#per_nombre").val('');			
-								$("#per_nombre_segundo").val('');			
-								$("#per_apellido_paterno").val('');			
-								$("#per_apellido_materno").val('');			
-								$("#per_email").val('');
-							}
-							else{
-								$("#per_nombre").val(responsex[0].per_nombre);			
-								$("#per_nombre_segundo").val(responsex[0].per_nombre_segundo);			
-								$("#per_apellido_paterno").val(responsex[0].per_apellido_paterno);			
-								$("#per_apellido_materno").val(responsex[0].per_apellido_materno);	
-								if (responsex[0].per_email != null){
-									$("#dat_adicionales").prop("checked", "checked");
-									$('#per_email').prop('disabled', false);
-									$("#per_email").val(responsex[0].per_email);
-								}
-							}
-						});			
+						BootstrapDialog.alert({
+							title: 'Error',
+							message: 'Alumno esta matriculado en el curso '+response[0].curso,
+							type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+							closable: true, // <-- Default value is false
+							draggable: true, // <-- Default value is false
+							buttonLabel: 'Volver', // <-- Default value is 'OK',
+						});
+						$("#per_rut_alu").val('');			
+						$("#per_nombre").val('');			
+						$("#per_nombre_segundo").val('');			
+						$("#per_apellido_paterno").val('');			
+						$("#per_apellido_materno").val('');			
+						$("#per_email").val('');
+						$("#per_rut_alu").focus();			
 					}
 				}
 				else{
@@ -193,21 +179,9 @@ else {
 		<div class="{{$entidad['clase']}}">
 			<div class="panel panel-primary" >
 				<div class="panel-heading">
-		    		<h3 class="panel-title">Curso</h3>
+		    		<h3 class="panel-title">Alumno de retirar</h3>
 		  		</div>
 		  		<div class="panel-body">
-					<div class="col-sm-12">
-						<div class="col-sm-3">
-				  		</div>
-						<div class="col-sm-6">
-							<input class="form-control" id="cur_nombre" name="cur_nombre" value="{{ $curso->name }}" type="text" disabled="disabled">
-				  		</div>
-						<div class="col-sm-3">
-				  		</div>
-			  		</div>
-					<div class="col-sm-12">
-						&nbsp;
-			  		</div>
 					<div class="col-sm-12">
 						<fieldset>
 							<?php 
@@ -215,28 +189,24 @@ else {
 							?>
 							{{ Form::open(['route' => $controller, 'method' => 'post', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform']) }}
 							<div class="panel panel-primary" >
-								<div class="panel-heading">
-						    		<h3 class="panel-title">{{ $title}}</h3>
-						  		</div>
-						  		<div class="panel-body">
-									<div class="form-group col-sm-12">
-										<div class="col-sm-1">
-											<label for="curso" class="control-label">Numero:</label>
-										</div>
-										<div class="col-sm-2">
-											<input class="form-control" id="alu_numero" name="alu_numero" type="text" value="{{ $numero }}"<?php echo $enable_numero; ?>>
-											<input class="form-control" id="hid_numero" name="hid_numero" value="{{ $numero }}" type="hidden">
-											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
-										</div>
-										<div class="col-sm-1">
-											<label for="curso" class="control-label">Rut:</label>
-										</div>
-										<div class="col-sm-3">
-											<input class="form-control" id="per_rut_alu" name="per_rut_alu" type="text" placeholder="Rut">
-										</div>
-										<div class="col-sm-5">
-										</div>
+								<div class="form-group col-sm-12">
+									<div class="col-sm-1">
+										<label for="curso" class="control-label">Numero:</label>
 									</div>
+									<div class="col-sm-2">
+										<input class="form-control" id="alu_numero" name="alu_numero" type="text" value="{{ $numero }}"<?php echo $enable_numero; ?>>
+										<input class="form-control" id="hid_numero" name="hid_numero" value="{{ $numero }}" type="hidden">
+										<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
+									</div>
+									<div class="col-sm-1">
+										<label for="curso" class="control-label">Run:</label>
+									</div>
+									<div class="col-sm-3">
+										<input class="form-control" id="per_rut_alu" name="per_rut_alu" type="text" placeholder="Rut">
+									</div>
+									<div class="col-sm-5">
+									</div>
+								</div>
 									<div class="form-group col-sm-12">
 										<div class="col-sm-1">
 											<label for="curso" class="control-label">Nombre:</label>
