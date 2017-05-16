@@ -102,7 +102,7 @@ class navegador{
 		->where('modulos.mod_activo', '=', 1)
 		->where('roles.rol_activo', '=', 1)
 		->where('modulos_asignados.mas_activo', '=', 1)
-		->where('modulos.mod_nombre', '=', $modulo)
+		->where('modulos.mod_url', '=', $modulo)
 		->select('modulos_asignados.mas_codigo', 'modulos_asignados.mas_add', 'modulos_asignados.mas_read', 
 				'modulos_asignados.mas_edit', 'modulos_asignados.mas_delete', 'modulos_asignados.mas_especial',
 				'roles.rol_nombre', 'asignaciones.per_rut')

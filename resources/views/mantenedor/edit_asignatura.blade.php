@@ -31,7 +31,8 @@ else {
 
 <script type="text/javascript">
 	$(document).ready(function() {
-		var pro_codigo = {{ $asignatura->per_rut }};
+		var pro_codigo = {{ $curso->per_rut }};
+		var asg_codigo = {{ $curso->asg_codigo }};
 		console.log(pro_codigo);
 		$.get("../../profesores_asignado", function(response,state){
 			if (response.length == 0){
@@ -59,6 +60,35 @@ else {
 				$("#pro_nombre").select2({
 //					  data: profesores
 				});
+			}
+		});
+		$.get("../../asignatura_asignado_edit/"+{{ $curso->niv_codigo }}+"/"+{{ $curso->cur_numero }}, function(response,state){
+			if (response.length == 0){
+				BootstrapDialog.alert({
+					title: 'Error',
+					message: 'No tiene asignaturas',
+					type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+					closable: true, // <-- Default value is false
+					draggable: true, // <-- Default value is false
+					buttonLabel: 'Volver', // <-- Default value is 'OK',
+				});
+			}
+			else{
+//				console.log(response);
+				var profesores = []; 
+				for (i=0; i<response.length; i++){
+					if (asg_codigo == response[i].id){
+						$("#asg_nombre").append("<option value='"+response[i].id+"' selected>"+response[i].name+"</option>");
+					}
+					else{
+						$("#asg_nombre").append("<option value='"+response[i].id+"'>"+response[i].name+"</option>");						
+					}	
+				}
+				console.log(profesores);
+				$("#asg_nombre").select2({
+//					  data: profesores
+				});
+				$('#asg_nombre').prop('disabled', true);
 			}
 		});
 	});
@@ -98,13 +128,15 @@ else {
 							<?php 
 								$controller = $entidad['controller'].'.update';
 							?>
-							{{ Form::model($asignatura, array('route' => array($controller, $asignatura[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
+							{{ Form::model($curso, array('route' => array($controller, $curso[$entidad['pk']]), 'method' => 'PUT', 'files' => true, 'class' => 'form-horizontal', 'id' => 'myform', 'name' =>'myform')) }}
 									<div class="form-group col-sm-12">
 										<div class="col-sm-4">
 											<label for="curso" class="control-label">Asignatura:</label>
 										</div>
 										<div class="col-sm-8">
-											<input class="form-control" id="asg_nombre" name="asg_nombre" type="text" value="{{ $asignatura->asg_nombre }}">
+											<select class="form-control"  id="asg_nombre" name="asg_nombre">
+											<!-- Dropdown List Option -->
+											</select>
 											<input class="form-control" id="cur_codigo" name="cur_codigo" value="{{ $curso->cur_codigo }}" type="hidden">
 										</div>
 									</div>
@@ -116,32 +148,6 @@ else {
 											<select class="form-control"  id="pro_nombre" name="pro_nombre">
 											<!-- Dropdown List Option -->
 											</select>
-										</div>
-									</div>
-									<div class="form-group col-sm-12">
-										<div class="col-sm-4">
-											<label for="curso" class="control-label">Orden:</label>
-										</div>
-										<div class="col-sm-5">
-											<input class="form-control" id="asg_orden" name="asg_orden" value="{{ $asignatura->asg_orden }}" type="text">
-										</div>
-										<div class="col-sm-3">
-										</div>
-									</div>
-									<div class="form-group col-sm-12">
-										<div class="col-sm-4">
-											<label for="curso" class="control-label">Activo:</label>
-										</div>
-										<div class="col-sm-8">
-											<?php 
-												if ($asignatura->asg_activo == 1){
-													$mostrar = 'checked';		
-												}
-												else{
-													$mostrar='';
-												}
-											?>
-											<input type="checkbox" id="asg_activo" name="asg_activo" <?php echo $mostrar; ?>>
 										</div>
 									</div>
 									<div class="col-sm-6 col-sm-offset-3" style="text-align: center;">

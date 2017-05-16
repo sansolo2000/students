@@ -10,12 +10,13 @@ use App\helpers\navegador;
 use View;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
+use App\models\anyo;
 use Session;
 
 class NivelController extends Controller
 {
 	public $niv_nombre;
-	public $Privilegio_modulo = 'Niveles';
+	public $Privilegio_modulo = 'niveles';
 	public $paginate = 10;
 	
 
@@ -52,11 +53,15 @@ class NivelController extends Controller
 			$tabla = NivelController::arreglo();
 
 			if ($exist == 0){
-				$niveles = Nivel::orderBy('niv_orden', 'ASC')
+				$niveles = Nivel::join('anyos', 'niveles.any_codigo', '=', 'anyos.any_codigo')
+				->where('any_activo', '=', 1)
+				->orderBy('niv_orden', 'ASC')
 				->paginate($this->paginate);
 			}
 			else{
-				$niveles = Nivel::select()
+				$niveles = Nivel::join('anyos', 'niveles.any_codigo', '=', 'anyos.any_codigo')
+				->where('any_activo', '=', 1)
+				->select()
 				->orderBy('niv_orden', 'ASC');
 
 				if ($this->niv_nombre != ''){
@@ -65,13 +70,15 @@ class NivelController extends Controller
 
 				$niveles = $niveles->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'niveles', 'pk' => 'niv_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 4);
+			$entidad = array('Filter' => 0, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'niveles', 'pk' => 'niv_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 4);
+			$renderactive = true;
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $niveles)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive);
 		}
 	}
 
@@ -120,8 +127,10 @@ class NivelController extends Controller
 	{
 		$nivel = new nivel;
 		$input = Input::all();
+		$anyo = anyo::where('anyos.any_activo', '=', 1)->first();
 		$nivel->niv_nombre 		= $input['niv_nombre'];
 		$nivel->niv_orden  		= $input['niv_orden'];
+		$nivel->any_codigo  	= $anyo->any_codigo;
 		$nivel->niv_activo  	= isset($input['niv_activo']) ? 1 : 0;
 		$nivel->save();
 		return redirect()->route('niveles.index');

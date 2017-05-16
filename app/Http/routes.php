@@ -55,6 +55,9 @@ use App\models\roles;
 		Route::resource('asignaturas', 'AsignaturaController');
 		Route::resource('periodos', 'PeriodoController');
 		Route::resource('ver_notas', 'VerNotasController');
+		Route::resource('anyos', 'AnyoController');
+		
+		
 		
 		Route::get('perfiles/modulo/{apl_codigo}/{rol_codigo}', ['as' => 'perfiles/modulo', 'uses' => 'Modulo_AsignadoController@getModulo']);
 		Route::get('perfiles/{id}/modulo/{apl_codigo}/{rol_codigo}', ['as' => 'perfiles/modulo', 'uses' => 'Modulo_AsignadoController@getModulo']);
@@ -74,7 +77,6 @@ use App\models\roles;
 		Route::post('alumnos/search', ['as' => 'alumnos/search', 'uses' => 'AlumnoController@index']);
 		Route::post('malla_curricular/search_curso', ['as' => 'malla_curricular/search_curso', 'uses' => 'MallaCurricularController@index']);
 		Route::post('vernotas/search_curso', ['as' => 'vernotas/search_curso', 'uses' => 'VerNotasController@index']);
-		
 		
 		Route::get('cargarnotas/downloadscore/{curso}/{periodos}', ['as' => 'cargarnotas/downloadscore', 'uses' => 'CargarNotasController@exportar_calificaciones']);
 		Route::post('cargarnotas/uploadscore', ['as' => 'cargarnotas/uploadscore', 'uses' => 'CargarNotasController@importar_calificaciones']);
@@ -100,7 +102,11 @@ use App\models\roles;
 		Route::get('colegios/comuna/{reg_codigo}', ['as' => 'colegios/comuna', 'uses' => 'ComunaController@getComuna']);
 		Route::get('profesores/persona/{per_rut}', ['as' => 'profesores/persona', 'uses' => 'PersonaController@getRol']);
 		Route::get('profesores_asignado', ['as' => 'profesores_asignado', 'uses' => 'CursoController@getProfesores']);
-		Route::get('asignatura_asignado/{cur_numero}/{cur_codigo}', ['as' => 'asignatura_asignado', 'uses' => 'AsignaturaController@getAsignaturas']);
+		Route::get('asignatura_asignado/{niv_codigo}/{cur_codigo}/{cur_numero}', ['as' => 'asignatura_asignado', 'uses' => 'AsignaturaController@getAsignaturas']);
+		Route::get('asignatura_asignado_edit/{niv_codigo}/{cur_numero}', ['as' => 'asignatura_asignado_edit', 'uses' => 'AsignaturaController@getAsignaturasEdit']);
+		
+		
+		
 		Route::get('cursos_disponibles', ['as' => 'cursos_disponibles', 'uses' => 'CursoController@getCursoDisponible']);
 		Route::get('cursos_disponibles_profesores/{per_rut}', ['as' => 'cursos_disponibles_profesores', 'uses' => 'CursoController@getCursoDisponibleProfesor']);
 		Route::get('persona_rol/{per_rut}/{cur_codigo}', ['as' => 'persona_rol', 'uses' => 'PersonaController@getPersonaRol']);
@@ -117,6 +123,7 @@ use App\models\roles;
 		Route::post('export_pdf/{per_rut}', ['as' => 'export_pdf', 'uses' => 'ExportPDFController@ExportPDF']);
 		Route::get('validar_email/{e_mail}/{per_rut}', ['as' => 'validar_email', 'uses' => 'PersonaController@ValidarEmail']);
 		Route::get('export_pdf/{per_rut}', ['as' => 'export_pdf', 'uses' => 'ExportPDFController@ExportPDF']);
+		Route::get('anyos_encontrar/{any_codigo}', ['as' => 'anyos_encontrar', 'uses' => 'AnyoController@anyos_encontrar']);
 		
 		
 		

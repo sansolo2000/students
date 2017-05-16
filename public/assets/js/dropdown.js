@@ -48,36 +48,43 @@ function removeOptions(selectbox)
 //using the function:
 
 function msg_delete(url, id){
-	 BootstrapDialog.confirm({
-         title: 'Precaucion',
-         message: 'Esta seguro que desea eliminar la informacion?',
-         type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-         closable: true, // <-- Default value is false
-         draggable: true, // <-- Default value is false
-         btnCancelLabel: 'Cancelar', // <-- Default value is 'Cancel',
-         btnOKLabel: 'Continuar', // <-- Default value is 'OK',
-         btnOKClass: 'btn-warning', // <-- If you didn't specify it, dialog type will be used,
-         callback: function(result) {
-             // result will be true if button was click, while it will be false if users close the dialog directly.
-             if(result) {
-            	 $.ajax({
-            		    url: url+"/"+id,
-            		    type: 'POST',
-            		    data: {	_method : "DELETE",
-            		    		_token 	: $('input[name="_token"]').val() 
-            		    },
-            		    error: function(status){
-            		    	console.log(status);
-            		    }, 
-            		    success: function(result) {
-            		        // Do something with the result
-            		    	location.reload();
-            		    }
-            		});
-             }
-         }
-     });
-
+	switch (url) { 
+		case '//localhost/students/public/anyos': 
+			mensaje = 'Se eliminar&aacute;n los datos del a&ntilde;o en: Asignaturas, Niveles y Periodos. Esta seguro que desea eliminar la informaci&oacute;n?';
+			break;
+		default:
+			mensaje = 'Esta seguro que desea eliminar la informaci&oacute;n?';
+	}
+	console.log(mensaje);
+	console.log(url);
+	BootstrapDialog.confirm({
+		title: 'Precaucion',
+		message: mensaje,
+		type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+		closable: true, // <-- Default value is false
+		draggable: true, // <-- Default value is false
+		btnCancelLabel: 'Cancelar', // <-- Default value is 'Cancel',
+		btnOKLabel: 'Continuar', // <-- Default value is 'OK',
+		btnOKClass: 'btn-warning', // <-- If you didn't specify it, dialog type will be used,
+		callback: function(result) {
+			if(result) {
+				$.ajax(
+					{
+						url		: url+"/"+id,
+						type	: 'POST',
+						data	: {	_method : "DELETE",
+						_token 	: $('input[name="_token"]').val() 
+					},
+					error: function(status){
+						console.log(status);
+					}, 
+					success: function(result) {
+						location.reload();
+					}
+				});
+			}
+		}
+	});
 }
 
 function msg_retirar(url, id){

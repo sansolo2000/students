@@ -30,6 +30,10 @@
 			Session::forget('search.profesor');
 			Session::forget('search.region');
 			Session::forget('search.rol');
+			Session::forget('search.colegio_errores');
+			Session::forget('search.asignatura_errores');
+			Session::forget('search.aplicacion_errores');
+			Session::forget('search.profesor_errores');
 		}
 		
 		public static function validaRut($rut){

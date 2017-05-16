@@ -11,12 +11,13 @@ use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use App\models\Aplicacion;
 use Session;
+use App\models\modulo;
 
 class AplicacionController extends Controller
 {
 	public $apl_nombre;
 	public $apl_descripcion;
-	public $Privilegio_modulo = 'Aplicaciones';
+	public $Privilegio_modulo = 'aplicaciones';
 	public $paginate = 10;
 	
 	
@@ -64,13 +65,20 @@ class AplicacionController extends Controller
 				}
 				$aplicaciones = $aplicaciones->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => 'Aplicaciones', 'controller' => '/'.util::obtener_url().'aplicaciones', 'pk' => 'apl_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
+			$renderactive = true;
+			$errores = '';
+			if (Session::has('search.aplicacion_errores')){
+				$errores = Session::get('search.aplicacion_errores');
+			}
+			$entidad = array('Filter' => 1, 'Nombre' => 'Aplicaciones', 'controller' => '/'.util::obtener_url().'aplicaciones', 'pk' => 'apl_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $aplicaciones)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive)
+			->with('errores', $errores);
 		}
 	}
 	
@@ -87,8 +95,15 @@ class AplicacionController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$aplicacion = Aplicacion::find($id);
-			$aplicacion->delete();
+			$cantidad = modulo::where('apl_codigo', '=', $id)->count();
+			if ($cantidad == 0){
+				$aplicacion = Aplicacion::find($id);
+				$aplicacion->delete();
+			}
+			else{
+				$errores = 'No puede eliminar la Aplicaci&oacute;n, puesto que tiene un modulo asignado';
+				Session::put('search.aplicacion_errores', $errores);
+			}
 			return redirect()->route('aplicaciones.index');
 		}
 	}

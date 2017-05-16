@@ -12,6 +12,7 @@ use View;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use Session;
+use App\models\modulo_asignado;
 
 class ModuloController extends Controller
 {
@@ -20,7 +21,7 @@ class ModuloController extends Controller
 	public $mod_nombre;
 	public $mod_descripcion;
 	public $mod_url;
-	public $Privilegio_modulo = 'Modulos';
+	public $Privilegio_modulo = 'modulos';
 	public $paginate = 10;
 	
 	public function index($id = NULL)
@@ -91,13 +92,20 @@ class ModuloController extends Controller
 				
 				$modulos = $modulos->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'modulos', 'pk' => 'mod_codigo', 'clase' => 'container col-md-12', 'col' => 7);
+			$errores = '';
+			if (Session::has('search.modulo_errores')){
+				$errores = Session::get('search.modulo_errores');
+			}
+			$entidad = array('Filter' => 1, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'modulos', 'pk' => 'mod_codigo', 'clase' => 'container col-md-12', 'col' => 7);
+			$renderactive = true;
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $modulos)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive)
+			->with('errores', $errores);
 		}
 	}
 	
@@ -114,8 +122,15 @@ class ModuloController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$modulo = Modulo::find($id);
-			$modulo->delete();
+			$cantidad = modulo_asignado::where('mod_codigo', '=', $id)->count();
+			if ($cantidad == 0){
+				$modulo = Modulo::find($id);
+				$modulo->delete();
+			}
+			else{
+				$errores = 'No puede eliminar el Modulo, puesto que esta asignado a un perfil';
+				Session::put('search.modulo_errores', $errores);
+			}
 			return redirect()->route('modulos.index');
 		}
 	}

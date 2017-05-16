@@ -32,7 +32,7 @@ class AdministradorController extends Controller
 	public $rol_codigo;
 	public $rol_nombre;
 	public $remenber_token;
-	public $Privilegio_modulo = 'Usuarios General';
+	public $Privilegio_modulo = 'administradores';
 	public $paginate = 10;
 	
 	public function index($id = NULL)
@@ -113,13 +113,15 @@ class AdministradorController extends Controller
 				
 				$personas = $personas->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'administradores', 'pk' => 'per_rut_adm', 'clase' => 'container col-md-12', 'col' => 7);
+			$renderactive = true;
+			$entidad = array('Filter' => 1,  'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'administradores', 'pk' => 'per_rut_adm', 'clase' => 'container col-md-12', 'col' => 7);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $personas)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive);
 		}
 	}
 

@@ -99,12 +99,10 @@ else {
 				'cur_numero'			:	{required: true, number: true},
 				'cur_letra'				:	{required: true, minlength: 1, maxlength: 1},
 				'niv_nombre'			:	{required: true, min:1},
-				'any_numero'			:	{required: true, min:1},
 				'pro_nombre'			:	{required: true, min:1},
 			},
 				messages: {
 				'niv_nombre'			: { min: 'Seleccione nivel' },
-				'any_numero'			: { min: 'Seleccione a\u00f1o' },
 				'pro_nombre'			: { min: 'Seleccione profesor' },
 			
 			},
@@ -156,14 +154,6 @@ else {
 							<select class="form-control"  id="pro_nombre" name="pro_nombre">
 							<!-- Dropdown List Option -->
 							</select>
-						</div>
-					</div>
-					<div class="form-group col-sm-12">
-						<div class="col-sm-3">
-							<label for="curso" class="control-label">A&ntilde;o:</label>
-						</div>
-						<div class="col-sm-9">
-							{{ Form::select('any_numero', $any_numero, $record['any_codigo'], ['id' => 'any_numero', 'class' => 'form-control', 'name' => 'any_numero' ]) }}								
 						</div>
 					</div>
 					<div class="form-group col-sm-12">

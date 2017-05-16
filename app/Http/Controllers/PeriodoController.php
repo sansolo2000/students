@@ -18,7 +18,8 @@ use App\models\anyo;
 class PeriodoController extends Controller
 {
 	public $pri_nombre;
-	public $Privilegio_modulo = 'Periodos';
+	public $Privilegio_modulo = 'periodos';
+	public $estado;
 	public $paginate = 10;
 
 
@@ -54,11 +55,15 @@ class PeriodoController extends Controller
 			$tabla = PeriodoController::arreglo();
 
 			if ($exist == 0){
-				$periodos = periodo::orderBy('pri_orden', 'ASC')
+				$periodos = periodo::join('anyos', 'periodos.any_codigo', '=', 'anyos.any_codigo')
+				->where('any_activo', '=', 1)
+				->orderBy('pri_orden', 'ASC')
 				->paginate($this->paginate);
 			}
 			else{
-				$periodos = periodo::select()
+				$periodos = periodo::join('anyos', 'periodos.any_codigo', '=', 'anyos.any_codigo')
+				->where('any_activo', '=', 1)
+				->select()
 				->orderBy('pri_orden', 'ASC');
 
 				if ($this->pri_nombre != ''){
@@ -66,13 +71,15 @@ class PeriodoController extends Controller
 				}
 				$periodos = $periodos->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => 'Periodos', 'controller' => '/'.util::obtener_url().'periodos', 'pk' => 'pri_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
+			$renderactive = true;
+			$entidad = array('Filter' => 1, 'Nombre' => 'Periodos', 'controller' => '/'.util::obtener_url().'periodos', 'pk' => 'pri_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $periodos)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive);
 		}
 	}
 
@@ -150,7 +157,15 @@ class PeriodoController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
+			$periodo = periodo::where('pri_activo', '=', 1)->count();
+			if ($periodo == 0){
+				$this->estado = true;
+			}
+			else{
+				$this->estado = false;
+			}
 			$tabla = PeriodoController::arreglo();
+			
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'periodos', 'pk' => 'pri_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
 			$record = periodo::find($id);
 			return view('mantenedor.edit')
@@ -165,25 +180,17 @@ class PeriodoController extends Controller
 
 	public function update($id)
 	{
-		// validate
-		// read more on validation at http://laravel.com/docs/validation
-
-		// store
-		//$periodo = new periodo();
 		$periodo_upd = new periodo();
 		$periodo_upd = periodo::select();
 		$input = Input::all();
 		if ($periodo_upd->count()>0 || isset($input['pri_activo'])){
 			$periodo = periodo::where('pri_activo', '=', 1)->update(['pri_activo' => 0]);
 		}
-		$anyo = anyo::where('anyos.any_activo', '=', 1)->first();
 		$periodo = periodo::find($id);
-		$periodo->pri_codigo		= $id;
 		$periodo->pri_nombre 		= $input['pri_nombre'];
 		$periodo->pri_orden  		= $input['pri_orden'];
 		$periodo->pri_cerrado  		= isset($input['pri_cerrado']) ? 1 : 0;
 		$periodo->pri_activo  		= isset($input['pri_activo']) ? 1 : 0;
-		$periodo->any_codigo		= $anyo->any_codigo; 
 		$periodo->save();
 		return redirect()->route('periodos.index');
 	}
@@ -228,7 +235,7 @@ class PeriodoController extends Controller
 				'tipo'			=> 'check',
 				'select'		=> 0,
 				'filter'		=> 0,
-				'enable'		=> true);
+				'enable'		=> $this->estado);
 		return $tabla;
 
 	}

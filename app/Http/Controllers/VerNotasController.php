@@ -32,7 +32,7 @@ class VerNotasController extends Controller
 	public $errores;
 	
 	
-	public $Privilegio_modulo = 'Ver Notas';
+	public $Privilegio_modulo = 'ver_notas';
 	public $paginate = 20;
 	
 	public function index($id = NULL)

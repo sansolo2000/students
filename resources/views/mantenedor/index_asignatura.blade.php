@@ -72,6 +72,27 @@ else {
 				}
 			});
 		});
+
+		@if (isset($errores))
+			var errores = '{!! $errores !!}';
+		@else 
+			var errores = '';
+		@endif
+		if (errores !== ''){
+			BootstrapDialog.alert({
+		            title: 'Resultado de carga realidad',
+		            message: errores,
+		            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+		            closable: true, // <-- Default value is false
+		            draggable: true, // <-- Default value is false
+		            buttonLabel: 'Volver', // <-- Default value is 'OK',
+		            //callback: function(result) {
+		                // result will be true if button was click, while it will be false if users close the dialog directly.
+		                //alert('Result is: ' + result);
+		            //}
+		        });
+			console.log(3);
+		}
 		
 	</script>
 

@@ -15,7 +15,7 @@ use Session;
 class RolController extends Controller
 {
 	public $rol_nombre;
-	public $Privilegio_modulo = 'Roles';
+	public $Privilegio_modulo = 'roles';
 	public $paginate = 10;
 	
 	
@@ -66,13 +66,15 @@ class RolController extends Controller
 				}
 				$roles = $roles->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'roles', 'pk' => 'rol_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
+			$entidad = array('Filter' => 1, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'roles', 'pk' => 'rol_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 5);
+			$renderactive = true;
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $roles)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive);
 		}
 	}
 	

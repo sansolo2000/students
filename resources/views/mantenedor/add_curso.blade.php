@@ -87,13 +87,11 @@ function validar_curso(){
 				'cur_numero'			:	{required: true, number: true},
 				'cur_letra'				:	{required: true, minlength: 1, maxlength: 1},
 				'niv_nombre'			:	{required: true, min:1},
-				'any_numero'			:	{required: true, min:1},
 				'pro_nombre'			:	{required: true, min:1},
 				'cur_cantidad_notas'	:	{required: true, number: true, range: [1, 12]},
 			},
 				messages: {
 				'niv_nombre'			: { min: 'Seleccione nivel' },
-				'any_numero'			: { min: 'Seleccione a\u00f1o' },
 				'pro_nombre'			: { min: 'Seleccione profesor' }, 
 				'cur_cantidad_notas'	: {range: 'la cantidad de notas deben ir entre 1 y 12'}	
 			},
@@ -141,14 +139,6 @@ function validar_curso(){
 							<select class="form-control"  id="pro_nombre" name="pro_nombre">
 							<!-- Dropdown List Option -->
 							</select>
-						</div>
-					</div>
-					<div class="form-group col-sm-12">
-						<div class="col-sm-3">
-							<label for="curso" class="control-label">A&ntilde;o:</label>
-						</div>
-						<div class="col-sm-9">
-							{{ Form::select('any_numero', $any_numero, -1, ['id' => 'any_numero', 'class' => 'form-control', 'name' => 'any_numero' ]) }}								
 						</div>
 					</div>
 					<div class="form-group col-sm-12">

@@ -29,7 +29,7 @@ class Modulo_AsignadoController extends Controller
 	public $mas_read;
 	public $mas_orden;
 	public $mas_activo;
-	public $Privilegio_modulo = 'Perfiles';
+	public $Privilegio_modulo = 'perfiles';
 	public $paginate = 10;
 	
 	public function index($id = NULL)
@@ -99,13 +99,15 @@ class Modulo_AsignadoController extends Controller
 				}				
 				$modulos_asignados = $modulos_asignados->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'perfiles', 'pk' => 'mas_codigo', 'clase' => 'container col-md-12', 'col' => 9);
+			$entidad = array('Filter' => 1, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'perfiles', 'pk' => 'mas_codigo', 'clase' => 'container col-md-12', 'col' => 9);
+			$renderactive = true;
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $modulos_asignados)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive);
 		}
 	}
 	

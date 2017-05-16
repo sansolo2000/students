@@ -14,6 +14,7 @@ use View;
 use Illuminate\Support\Facades\Input;
 //use App\Http\Requests;
 use Session;
+use App\models\curso;
 
 
 class ColegioController extends Controller
@@ -25,7 +26,8 @@ class ColegioController extends Controller
 	public $col_nombre;
 	public $col_email;
 	public $col_direccion;
-	public $Privilegio_modulo = 'Colegios';
+	public $estado;
+	public $Privilegio_modulo = 'colegios';
 	public $paginate = 10;
 	
 
@@ -103,13 +105,20 @@ class ColegioController extends Controller
 
 				$colegios = $colegios->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'colegios', 'pk' => 'col_codigo', 'clase' => 'container col-md-12', 'col' => 8);
+			$errores = '';
+			if (Session::has('search.colegio_errores')){
+				$errores = Session::get('search.colegio_errores');
+			}
+			$entidad = array('Filter' => 1, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'colegios', 'pk' => 'col_codigo', 'clase' => 'container col-md-12', 'col' => 8);
+			$renderactive = true;
 			return view('mantenedor.index')
 						->with('menu', $menu)
 						->with('tablas', $tabla)
 						->with('records', $colegios)
 						->with('entidad', $entidad)
-						->with('privilegio', $privilegio);
+						->with('privilegio', $privilegio)
+						->with('renderactive', $renderactive)
+						->with('errores', $errores);
 		}
 	}
 
@@ -127,8 +136,15 @@ class ColegioController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$colegio = Colegio::find($id);
-			$colegio->delete();
+			$curso = curso::where('col_codigo', '=', $id)->count();
+			if ($curso == 0){
+				$colegio = colegio::find($id);
+				$colegio->delete();
+			}
+			else{
+				$errores = 'No puede eliminarse colegio, puesto que tiene un curso asignado';
+				Session::put('search.colegio_errores', $errores);
+			}
 			return redirect()->route('colegios.index');
 		}
 	}
@@ -144,6 +160,7 @@ class ColegioController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
+			$this->estado = true;
 			$this->reg_nombre = 	Region::where('reg_activo', '=', '1')
 									->orderBy('reg_orden', 'ASC')
 									->lists('reg_nombre', 'reg_codigo');
@@ -212,6 +229,12 @@ class ColegioController extends Controller
 								->join('regiones', 'regiones.reg_codigo', '=', 'comunas.reg_codigo')
 								->orderBy('colegios.col_activo', 'DESC')
 								->find($id);
+			if ($record->col_activo == 1){
+				$this->estado = false;
+			}
+			else{
+				$this->estado = true;
+			}
 			$this->reg_nombre = 	Region::where('reg_activo', '=', '1')
 									->orderBy('reg_orden', 'ASC')
 									->lists('reg_nombre', 'reg_codigo');
@@ -225,7 +248,6 @@ class ColegioController extends Controller
 			$this->com_codigo = 'com_codigo';
 			$tabla = ColegioController::arreglo();
 			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => 'colegios', 'pk' => 'col_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'label' => 'container col-md-4');
-
 			return view('mantenedor.edit')
 					->with('record',$record)
 					->with('menu', $menu)
@@ -348,7 +370,7 @@ class ColegioController extends Controller
 							'tipo'			=> 'check',
 							'select'		=> 0,
 							'filter'		=> 0,
-							'enable'		=> true);
+							'enable'		=> $this->estado);
 		$tabla[] = array(	'nombre' 		=> 'Archivo',
 							'campo'			=> 'col_logo',
 							'clase' 		=> 'container col-md-5',

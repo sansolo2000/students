@@ -33,7 +33,7 @@ class CargarNotasController extends Controller
 	public $errores;
 	
 	
-	public $Privilegio_modulo = 'Cargar Notas';
+	public $Privilegio_modulo = 'cargarnotas';
 	public $paginate = 20;
 	
 	public function index($id = NULL)

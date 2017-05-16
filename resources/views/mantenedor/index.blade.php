@@ -29,6 +29,30 @@ else {
 @section('content')
 {!! Html::script('assets/js/dropdown.js') !!}
 
+	<script type="text/javascript">
+		@if (isset($errores))
+			var errores = '{!! $errores !!}';
+			var titulo = '{!! $entidad["Nombre"] !!}';
+		@else 
+			var errores = '';
+		@endif
+		if (errores !== ''){
+			BootstrapDialog.alert({
+		            title: titulo,
+		            message: errores,
+		            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+		            closable: true, // <-- Default value is false
+		            draggable: true, // <-- Default value is false
+		            buttonLabel: 'Volver', // <-- Default value is 'OK',
+		            //callback: function(result) {
+		                // result will be true if button was click, while it will be false if users close the dialog directly.
+		                //alert('Result is: ' + result);
+		            //}
+		        });
+			console.log(3);
+		}
+	</script>
+
 	<div class="{{ $entidad['clase'] }}">
 		<div class="panel panel-default">
 			<div class="panel-heading">
@@ -47,6 +71,7 @@ else {
 						</tr>
 					</thead>
 					<tbody>
+						@if($entidad['Filter']  == 1)
 							<tr class="warning">
 								{{ Form::model(Request::all(), array('url' => $entidad['controller'].'/search', 'class' => 'pull-right')) }}
 								@foreach($tablas as $tabla)
@@ -80,7 +105,8 @@ else {
 									
 									</td>
 						    </tr>
-								                {{ Form::close() }}
+								{{ Form::close() }}
+						@endif
 
 						@if (count($records)>0)
 							@foreach($records as $record)
@@ -181,11 +207,13 @@ else {
 									</a>
 								</td>
 						    </tr>
-							<tr class="active">
-							    <td class="text-center pager" colspan="{{$entidad['col']}}">
-							    	 {{ $records->render() }}
-							    </td>
-						    </tr>
+						    @if ($renderactive)
+								<tr class="active">
+								    <td class="text-center pager" colspan="{{$entidad['col']}}">
+								    	 {{ $records->render() }}
+								    </td>
+							    </tr>
+							@endif
     					</tbody>
 				</table>
 	  		</div>

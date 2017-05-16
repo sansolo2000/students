@@ -219,6 +219,9 @@ else {
 									cantidad_total++;
 									mostrar += '		 			<td><strong>'+total.toFixed(1)+'</strong></td>';
 								}
+								else{
+									mostrar += '		 			<td><strong>&nbsp;</strong></td>';
+								}
 								 
 							}
 							promedio_total = promedio_total / cantidad_total 

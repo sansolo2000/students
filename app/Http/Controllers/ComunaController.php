@@ -12,13 +12,14 @@ use View;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use Session;
+use App\models\colegio;
 
 class ComunaController extends Controller
 {
 	public $com_nombre;
 	public $reg_codigo;
 	public $reg_nombre;
-	public $Privilegio_modulo = 'Comunas';
+	public $Privilegio_modulo = 'comunas';
 	public $paginate = 10;
 	
 	
@@ -79,13 +80,20 @@ class ComunaController extends Controller
 
 				$comuna = $comuna->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'comunas', 'pk' => 'com_codigo', 'clase' => 'container col-md-10 col-md-offset-1', 'col' => 5);
+			$renderactive = true;
+			$errores = '';
+			if (Session::has('search.comuna_errores')){
+				$errores = Session::get('search.comuna_errores');
+			}
+			$entidad = array('Filter' => 1, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'comunas', 'pk' => 'com_codigo', 'clase' => 'container col-md-10 col-md-offset-1', 'col' => 5);
 			return view('mantenedor.index')
 			->with('menu', $menu)
 			->with('tablas', $tabla)
 			->with('records', $comuna)
 			->with('entidad', $entidad)
-			->with('privilegio', $privilegio);
+			->with('privilegio', $privilegio)
+			->with('renderactive', $renderactive)
+			->with('errores', $errores);
 		}
 	}
 
@@ -102,8 +110,15 @@ class ComunaController extends Controller
 			return redirect()->route('logout');
 		}
 		else{
-			$comuna = Comuna::find($id);
-			$comuna->delete();
+			$cantidad = colegio::where('com_codigo', '=', $id)->count();
+			if ($cantidad == 0){
+				$comuna = Comuna::find($id);
+				$comuna->delete();
+			}
+			else{
+				$errores = 'No puede eliminar la comuna, puesto que esta asociada con un colegio';
+				Session::put('search.comuna_errores', $errores);
+			}
 			return redirect()->route('comunas.index');
 		}
 	}

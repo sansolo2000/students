@@ -16,7 +16,7 @@ use Session;
 class RegionController extends Controller
 {
 	public $reg_nombre;
-	public $Privilegio_modulo = 'Regiones';
+	public $Privilegio_modulo = 'regiones';
 	public $paginate = 10;
 	
 	
@@ -67,13 +67,15 @@ class RegionController extends Controller
 
 				$regiones = $regiones->paginate($this->paginate);
 			}
-			$entidad = array('Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'regiones', 'pk' => 'reg_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 4);
+			$renderactive = true;
+			$entidad = array('Filter' => 1, 'Nombre' => $this->Privilegio_modulo, 'controller' => '/'.util::obtener_url().'regiones', 'pk' => 'reg_codigo', 'clase' => 'container col-md-6 col-md-offset-3', 'col' => 4);
 			return view('mantenedor.index')
 						->with('menu', $menu)
 						->with('tablas', $tabla)
 						->with('records', $regiones)
 						->with('entidad', $entidad)
-						->with('privilegio', $privilegio);
+						->with('privilegio', $privilegio)
+						->with('renderactive', $renderactive);
 		}
 	}
 	

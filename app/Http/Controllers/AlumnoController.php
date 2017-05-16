@@ -42,7 +42,7 @@ class AlumnoController extends Controller
 	public $cur_codigo;
 	public $cur_nombre;
 	public $remenber_token;
-	public $Privilegio_modulo = 'Alumnos';
+	public $Privilegio_modulo = 'alumnos';
 	public $paginate = 10;
 	public $errores;
 

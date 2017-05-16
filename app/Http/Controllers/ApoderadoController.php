@@ -46,7 +46,7 @@ class ApoderadoController extends Controller
 	
 	public $remenber_token;
 	public $errores;
-	public $Privilegio_modulo = 'Apoderados';
+	public $Privilegio_modulo = 'apoderados';
 	public $paginate = 10;
 
 	public function index($id = NULL)

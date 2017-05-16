@@ -54,7 +54,7 @@ else {
 				});
 			}
 		});
-		$.get("../../asignatura_asignado/"+{{ $curso->cur_numero }}+"/"+{{ $curso->cur_codigo }}, function(response,state){
+		$.get("../../asignatura_asignado/"+{{ $curso->niv_codigo }}+"/"+{{ $curso->cur_codigo }}+"/"+{{ $curso->cur_numero }}, function(response,state){
 			if (response.length == 0){
 				BootstrapDialog.alert({
 					title: 'Error',
